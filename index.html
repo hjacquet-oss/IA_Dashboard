@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Console de crédits — ComfyUI / RunComfy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d10">
+<meta name="description" content="Console de suivi des crédits ComfyUI / RunComfy du studio">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crédits IA">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0d10; --surface:#11161a; --surface2:#161d22; --border:#232b31;
+    --text:#e8ecee; --muted:#7c8791;
+    --teal:#2dd4bf; --amber:#f2a93b; --red:#ff5d5d;
+    --mono:'IBM Plex Mono', monospace; --disp:'Space Grotesk', sans-serif; --body:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:28px 20px 60px; padding-top:calc(28px + env(safe-area-inset-top)); padding-bottom:calc(60px + env(safe-area-inset-bottom));}
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:10px;}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); margin:0 0 6px;}
+  h1{font-family:var(--disp); font-weight:700; font-size:26px; margin:0; letter-spacing:-0.01em;}
+  .meta{font-family:var(--mono); font-size:12px; color:var(--muted); text-align:right;}
+  .reload{margin-top:8px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:11px; padding:7px 12px; border-radius:5px; cursor:pointer;}
+  .reload:hover{border-color:var(--teal); color:var(--teal);}
+  .reload[disabled]{opacity:.5; cursor:wait;}
+  #reload-msg{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;display:block; max-width:340px;}
+  #live-badge{font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:20px; border:1px solid var(--border); color:var(--muted); margin-left:8px;}
+  #live-badge.on{color:var(--teal); border-color:var(--teal);}
+  #live-badge.off{color:var(--red); border-color:var(--red);}
+  #install-btn{display:none; margin-top:8px; margin-left:8px; background:var(--teal); border:1px solid var(--teal); color:#0a0d10; font-family:var(--mono); font-size:11px; font-weight:600; padding:7px 12px; border-radius:5px; cursor:pointer;}
+  .setup-note{font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
+  .setup-note b{color:var(--amber);}
+  #lib-error{display:none; font-family:var(--mono); font-size:12px; color:var(--red); background:rgba(255,93,93,.08); border:1px solid var(--red); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
+  #config-error{display:none; font-family:var(--mono); font-size:12px; color:var(--amber); background:rgba(242,169,59,.08); border:1px solid var(--amber); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
+  .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:22px;}
+  @media (max-width:900px){ .grid-top{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .grid-top{grid-template-columns:1fr;} }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px;}
+  .card h3{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 12px; font-weight:500;}
+  .gauge-card{display:flex; align-items:center; gap:14px;}
+  .gauge-num{font-family:var(--mono);}
+  .gauge-num .big{font-size:24px; font-weight:600; display:block; line-height:1;}
+  .gauge-num .small{font-size:12px; color:var(--muted);}
+  .gauge-num .days{font-size:12px; margin-top:8px; display:block;}
+  .stat .big{font-family:var(--mono); font-size:26px; font-weight:600; display:block;}
+  .stat .sub{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:4px;}
+  .stat .delta{font-family:var(--mono); font-size:11px; margin-top:8px; display:inline-block; padding:2px 7px; border-radius:4px;}
+  .delta.up{background:rgba(255,93,93,.12); color:var(--red);}
+  .delta.down{background:rgba(45,212,191,.12); color:var(--teal);}
+  section{margin-bottom:24px;}
+  .section-title{font-family:var(--disp); font-size:16px; font-weight:600; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+  .section-title .tag{font-family:var(--mono); font-size:10px; color:var(--muted); border:1px solid var(--border); padding:2px 6px; border-radius:4px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:900px){ .grid-2{grid-template-columns:1fr;} }
+  .chart-box{position:relative; height:270px;}
+  .chart-box canvas{position:absolute; top:0; left:0; width:100%!important; height:100%!important;}
+  .rate-line{display:flex; gap:22px; flex-wrap:wrap; align-items:center; font-family:var(--mono); font-size:13px; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:14px;}
+  .rate-line b{color:var(--text); font-weight:600;}
+  .calc{display:grid; grid-template-columns:1fr auto; gap:14px; align-items:end;}
+  @media (max-width:560px){ .calc{grid-template-columns:1fr;} }
+  .calc label{font-family:var(--mono); font-size:11px; color:var(--muted); display:block; margin-bottom:6px;}
+  .calc input{width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:15px; padding:9px 10px; border-radius:6px;}
+  .calc input:focus{outline:none; border-color:var(--teal);}
+  .calc-result{background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-family:var(--mono); min-width:160px;}
+  .calc-result .val{font-size:24px; font-weight:600; color:var(--amber);}
+  .calc-result .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px;}
+  th, td{text-align:right; padding:9px 10px; border-bottom:1px solid var(--border);}
+  th:first-child, td:first-child{text-align:left; color:var(--muted);}
+  th{color:var(--muted); font-weight:500; text-transform:uppercase; font-size:10px; letter-spacing:.06em;}
+  tbody tr:hover{background:var(--surface2);}
+  tfoot td{font-weight:600; color:var(--text); border-top:1px solid var(--border); border-bottom:none;}
+  footer{font-family:var(--mono); font-size:11px; color:var(--muted); text-align:center; margin-top:30px; line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Studio · Consommation IA</p>
+      <h1>Console de crédits ComfyUI / RunComfy <span id="live-badge" class="off">● snapshot</span></h1>
+    </div>
+    <div>
+      <div class="meta" id="meta-updated">—</div>
+      <button class="reload" id="reload-btn" onclick="tryReload()">↻ Recharger depuis le Sheet</button>
+      <button id="install-btn">⭳ Installer l'app</button>
+      <span id="reload-msg"></span>
+    </div>
+  </header>
+
+  <div id="config-error" class="setup-note"></div>
+  <div class="setup-note">
+    Données lues via un Web App Apps Script connecté au classeur. <b>Réserve de crédit</b> : live. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer).
+  </div>
+  <div id="lib-error"></div>
+
+  <div class="grid-top">
+    <div class="card gauge-card">
+      <svg id="gauge-comfy" width="70" height="70" viewBox="0 0 70 70"></svg>
+      <div class="gauge-num">
+        <h3 style="margin-bottom:2px">ComfyUI — solde <span style="opacity:.5">(G5/H5)</span></h3>
+        <span class="big" id="comfy-credits-big">—</span>
+        <span class="small" id="comfy-eur-small">—</span>
+        <span class="days" id="comfy-days"></span>
+      </div>
+    </div>
+    <div class="card gauge-card">
+      <svg id="gauge-run" width="70" height="70" viewBox="0 0 70 70"></svg>
+      <div class="gauge-num">
+        <h3 style="margin-bottom:2px" id="run-h6">RunComfy — solde <span style="opacity:.5">(H6)</span></h3>
+        <span class="big" id="run-eur-big">—</span>
+        <span class="days" id="run-days"></span>
+      </div>
+    </div>
+    <div class="card stat">
+      <h3>Coût moyen / jour (total)</h3>
+      <span class="big" id="avg-day-total">—</span>
+      <span class="sub" id="avg-day-detail"></span>
+      <span class="delta down" id="avg-month-total"></span>
+    </div>
+    <div class="card stat">
+      <h3>Juillet 2026 (au 24/07)</h3>
+      <span class="big" id="july-total">—</span>
+      <span class="sub" id="july-detail"></span>
+    </div>
+  </div>
+
+  <section>
+    <p class="section-title">Réserve de crédit <span class="tag">évolution réelle du solde restant, lue dans le Sheet</span></p>
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="margin-bottom:8px">ComfyUI — relevés réels</h3>
+        <div class="chart-box"><canvas id="chartReserveComfy"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:8px">RunComfy — relevés réels</h3>
+        <div class="chart-box"><canvas id="chartReserveRun"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-title">Consommation hebdomadaire <span class="tag">snapshot manuel</span></p>
+    <div class="grid-2">
+      <div class="card"><h3>ComfyUI</h3><div class="chart-box"><canvas id="chartComfyWeekly"></canvas></div></div>
+      <div class="card"><h3>RunComfy</h3><div class="chart-box"><canvas id="chartRunWeekly"></canvas></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div>
+        <p class="section-title">Comparatif mensuel <span class="tag">snapshot manuel</span></p>
+        <div class="card"><div class="chart-box"><canvas id="chartMonthly"></canvas></div></div>
+      </div>
+      <div>
+        <p class="section-title">7 derniers jours <span class="tag">€ / jour</span></p>
+        <div class="card"><div class="chart-box"><canvas id="chartLast7"></canvas></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-title">Calculateur de coût</p>
+    <div class="card">
+      <div class="rate-line">
+        <span>Taux : <b id="rate-dollar">210 crédits = 1 $</b></span>
+        <span>Prix du crédit : <b id="rate-price">0,00476190 €</b></span>
+      </div>
+      <div class="calc">
+        <div>
+          <label>Crédits à dépenser</label>
+          <input type="number" id="calc-credits" value="3100" min="0">
+        </div>
+        <div class="calc-result">
+          <div class="lbl">Prix total</div>
+          <div class="val" id="calc-result">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-title">Détail mensuel</p>
+    <div class="card" style="padding:0; overflow:auto;">
+      <table>
+        <thead><tr><th>Mois</th><th>Crédits ComfyUI</th><th>€ ComfyUI</th><th>€ RunComfy</th><th>€ Total</th></tr></thead>
+        <tbody id="monthly-table"></tbody>
+        <tfoot id="monthly-foot"></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, via Web App Apps Script.<br>
+    RunComfy n'a pas d'unité crédit : seule la valeur € (colonne H) fait foi, la colonne G est ignorée.
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — à adapter après déploiement du Web App Apps Script
+   ===================================================================== */
+// Colle ici l'URL /exec obtenue après :
+// Extensions > Apps Script > Déployer > Nouveau déploiement > Application Web
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyZ8kLpVQaXOqIRzRraBvlZhxkuXvzg7k-o2M-dY7gii2bRA-nicZpYxb66wNBtUtON/exec";
+
+/* ================= DATA snapshot de secours (affichée le temps que le fetch réponde) ================= */
+const weeklyComfy = [
+  {w:'20/04', credits:9698,  eur:39.42},
+  {w:'27/04', credits:39588, eur:161.01},
+  {w:'04/05', credits:31845, eur:129.28},
+  {w:'11/05', credits:56038, eur:228.50},
+  {w:'18/05', credits:43303, eur:177.35},
+  {w:'25/05', credits:65556, eur:268.02},
+  {w:'01/06', credits:84695, eur:347.84},
+  {w:'08/06', credits:64405, eur:265.66},
+  {w:'15/06', credits:40081, eur:165.12},
+  {w:'22/06', credits:48433, eur:202.79},
+  {w:'29/06', credits:102255,eur:426.52},
+  {w:'06/07', credits:72423, eur:301.98},
+  {w:'13/07', credits:93298, eur:388.46},
+  {w:'20/07*',credits:56747, eur:237.07}
+];
+const weeklyRun = [
+  {w:'01/06', eur:0.00}, {w:'08/06', eur:88.96}, {w:'15/06', eur:68.41},
+  {w:'22/06', eur:61.34}, {w:'29/06', eur:106.80}, {w:'06/07', eur:86.56},
+  {w:'13/07', eur:1.83}, {w:'20/07*', eur:126.69}
+];
+const monthly = [
+  {m:'Avril',    credits:41816,  comfy:170.09,  run:null},
+  {m:'Mai',      credits:204212, comfy:833.48,  run:null},
+  {m:'Juin',     credits:271978, comfy:1124.73, run:271.41},
+  {m:'Juillet*', credits:290359, comfy:1210.71, run:269.17}
+];
+const last7Comfy = [
+  {d:'sam', eur:0.00, cr:0}, {d:'dim', eur:0.00, cr:0}, {d:'lun', eur:57.63, cr:13817},
+  {d:'mar', eur:97.70, cr:23394}, {d:'mer', eur:13.05, cr:3127}, {d:'jeu', eur:50.83, cr:12145}, {d:'ven*', eur:17.86, cr:4264}
+];
+const last7Run = [
+  {d:'sam', eur:0.00}, {d:'dim', eur:0.00}, {d:'lun', eur:52.00},
+  {d:'mar', eur:27.75}, {d:'mer', eur:14.11}, {d:'jeu', eur:14.56}, {d:'ven*', eur:18.28}
+];
+
+const COMFY_RESERVE = [];
+const RUN_RESERVE_SAMPLE = [];
+
+let live = {
+  comfyCredits:128328, comfyEur:537.53, comfyDate:'24/07/2026 16:50:24',
+  runEur:123.42, runDate:'24/07/2026 16:48:33',
+  avgDayComfyCredits:8692, avgDayComfyEur:36.38, avgDayRunEur:10.81,
+  rateDollar:210, pricePerCredit:0.00476190476
+};
+
+const fmtEur = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const fmtInt = n => Math.round(n).toLocaleString('fr-FR');
+
+/* ================= RENDER ================= */
+function drawGauge(svgId, ratio, color){
+  const svg = document.getElementById(svgId);
+  const r = 28, cx=35, cy=35;
+  const circumference = 2*Math.PI*r;
+  const offset = circumference * (1-Math.max(0,Math.min(1,ratio)));
+  svg.innerHTML =
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#232b31" stroke-width="7"/>' +
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="7" ' +
+    'stroke-dasharray="'+circumference+'" stroke-dashoffset="'+offset+'" ' +
+    'stroke-linecap="round" transform="rotate(-90 '+cx+' '+cy+')"/>';
+}
+
+function renderTop(){
+  document.getElementById('comfy-credits-big').innerHTML = fmtInt(live.comfyCredits)+'<span class="small"> cr.</span>';
+  document.getElementById('comfy-eur-small').textContent = fmtEur(live.comfyEur);
+  document.getElementById('run-eur-big').textContent = fmtEur(live.runEur);
+
+  const comfyDaysLeft = live.comfyCredits / live.avgDayComfyCredits;
+  const runDaysLeft = live.runEur / live.avgDayRunEur;
+  drawGauge('gauge-comfy', comfyDaysLeft/30, comfyDaysLeft<7?'#ff5d5d':comfyDaysLeft<15?'#f2a93b':'#2dd4bf');
+  drawGauge('gauge-run', runDaysLeft/30, runDaysLeft<7?'#ff5d5d':runDaysLeft<15?'#f2a93b':'#2dd4bf');
+  document.getElementById('comfy-days').textContent = '≈ '+comfyDaysLeft.toFixed(1)+' j au rythme actuel';
+  document.getElementById('run-days').textContent = '≈ '+runDaysLeft.toFixed(1)+' j au rythme actuel';
+
+  document.getElementById('avg-day-total').textContent = fmtEur(live.avgDayComfyEur+live.avgDayRunEur);
+  document.getElementById('avg-day-detail').textContent = 'ComfyUI '+fmtEur(live.avgDayComfyEur)+' · RunComfy '+fmtEur(live.avgDayRunEur);
+  document.getElementById('avg-month-total').textContent = '≈ '+fmtEur((live.avgDayComfyEur+live.avgDayRunEur)*29.75)+' / mois';
+
+  const julyComfy = monthly[monthly.length-1].comfy, julyRun = monthly[monthly.length-1].run||0;
+  document.getElementById('july-total').textContent = fmtEur(julyComfy+julyRun);
+  document.getElementById('july-detail').textContent = 'ComfyUI '+fmtEur(julyComfy)+' · RunComfy '+fmtEur(julyRun);
+
+  document.getElementById('rate-dollar').textContent = live.rateDollar+' crédits = 1 $';
+  document.getElementById('rate-price').textContent = live.pricePerCredit.toLocaleString('fr-FR',{minimumFractionDigits:8,maximumFractionDigits:8})+' €';
+  document.getElementById('meta-updated').textContent = 'ComfyUI '+live.comfyDate+' · RunComfy '+live.runDate;
+  runCalc();
+}
+
+let chartRefs = {};
+function destroyCharts(){ Object.values(chartRefs).forEach(c=>c && c.destroy()); chartRefs = {}; }
+
+function renderCharts(){
+  if(typeof Chart === 'undefined'){
+    const box = document.getElementById('lib-error');
+    box.style.display='block'; box.textContent = "⚠ Chart.js n'a pas pu se charger depuis le CDN.";
+    return;
+  }
+  if(typeof ChartDataLabels !== 'undefined'){ Chart.register(ChartDataLabels); }
+  destroyCharts();
+  Chart.defaults.color = '#7c8791';
+  Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.borderColor = '#232b31';
+  Chart.defaults.maintainAspectRatio = false;
+  Chart.defaults.responsive = true;
+
+  chartRefs.reserveComfy = new Chart(document.getElementById('chartReserveComfy'), {
+    type:'line',
+    data:{ labels:COMFY_RESERVE.map(p=>p[0]), datasets:[{label:'Crédits restants', data:COMFY_RESERVE.map(p=>p[1]), borderColor:'#2dd4bf', backgroundColor:'#2dd4bf22', fill:true, tension:0, pointRadius:0, borderWidth:1.3}] },
+    options:{responsive:true, plugins:{legend:{display:false}, datalabels:{display:false}}, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:8}}}}
+  });
+
+  chartRefs.reserveRun = new Chart(document.getElementById('chartReserveRun'), {
+    type:'line',
+    data:{ labels:RUN_RESERVE_SAMPLE.map(p=>p[0]), datasets:[{label:'Solde (€)', data:RUN_RESERVE_SAMPLE.map(p=>p[1]), borderColor:'#f2a93b', backgroundColor:'#f2a93b22', fill:true, stepped:true, pointRadius:0, borderWidth:1.3}] },
+    options:{responsive:true, plugins:{legend:{display:false}, datalabels:{display:false}}, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:8}}}}
+  });
+
+  chartRefs.weeklyComfy = new Chart(document.getElementById('chartComfyWeekly'), {
+    type:'bar',
+    data:{ labels: weeklyComfy.map(x=>x.w), datasets:[{label:'ComfyUI', data:weeklyComfy.map(x=>x.credits), backgroundColor:'#2dd4bf99', borderColor:'#2dd4bf', borderWidth:1}] },
+    options:{responsive:true, plugins:{legend:{display:false},
+      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
+        formatter:(v,ctx)=> fmtInt(v)+' cr.\n'+fmtEur(weeklyComfy[ctx.dataIndex].eur)}
+    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+  });
+
+  chartRefs.weeklyRun = new Chart(document.getElementById('chartRunWeekly'), {
+    type:'bar',
+    data:{ labels: weeklyRun.map(x=>x.w), datasets:[{label:'RunComfy', data:weeklyRun.map(x=>x.eur), backgroundColor:'#f2a93b99', borderColor:'#f2a93b', borderWidth:1}] },
+    options:{responsive:true, plugins:{legend:{display:false},
+      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9}, formatter:(v)=> fmtEur(v)}
+    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+  });
+
+  chartRefs.monthly = new Chart(document.getElementById('chartMonthly'), {
+    type:'bar',
+    data:{ labels: monthly.map(x=>x.m), datasets:[
+      {label:'ComfyUI (€)', data:monthly.map(x=>x.comfy), backgroundColor:'#2dd4bf'},
+      {label:'RunComfy (€)', data:monthly.map(x=>x.run), backgroundColor:'#f2a93b'}
+    ]},
+    options:{responsive:true, plugins:{
+      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
+        formatter:(v,ctx)=>{
+          if(v===null||v===undefined) return '';
+          if(ctx.datasetIndex===0) return fmtInt(monthly[ctx.dataIndex].credits)+' cr.\n'+fmtEur(v);
+          return fmtEur(v);
+        }}
+    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+  });
+
+  chartRefs.last7 = new Chart(document.getElementById('chartLast7'), {
+    type:'bar',
+    data:{ labels: last7Comfy.map(x=>x.d), datasets:[
+      {label:'ComfyUI', data:last7Comfy.map(x=>x.eur), backgroundColor:'#2dd4bf'},
+      {label:'RunComfy', data:last7Run.map(x=>x.eur), backgroundColor:'#f2a93b'}
+    ]},
+    options:{responsive:true, plugins:{
+      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
+        formatter:(v,ctx)=>{
+          if(ctx.datasetIndex===0) return fmtInt(last7Comfy[ctx.dataIndex].cr)+' cr.\n'+fmtEur(v);
+          return fmtEur(v);
+        }}
+    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+  });
+}
+
+function renderTable(){
+  const tbody = document.getElementById('monthly-table');
+  tbody.innerHTML = '';
+  monthly.forEach(row=>{
+    const total = row.comfy + (row.run||0);
+    tbody.innerHTML += '<tr><td>'+row.m+'</td><td>'+fmtInt(row.credits)+'</td><td>'+fmtEur(row.comfy)+'</td><td>'+(row.run!==null?fmtEur(row.run):'—')+'</td><td>'+fmtEur(total)+'</td></tr>';
+  });
+  const totCredits = monthly.reduce((s,r)=>s+r.credits,0);
+  const totComfy = monthly.reduce((s,r)=>s+r.comfy,0);
+  const totRun = monthly.reduce((s,r)=>s+(r.run||0),0);
+  document.getElementById('monthly-foot').innerHTML =
+    '<tr><td>Total</td><td>'+fmtInt(totCredits)+'</td><td>'+fmtEur(totComfy)+'</td><td>'+fmtEur(totRun)+'</td><td>'+fmtEur(totComfy+totRun)+'</td></tr>';
+}
+
+function runCalc(){
+  const credits = parseFloat(document.getElementById('calc-credits').value) || 0;
+  document.getElementById('calc-result').textContent = fmtEur(credits * live.pricePerCredit);
+}
+document.getElementById('calc-credits').addEventListener('input', runCalc);
+
+function renderAll(){ renderTop(); renderCharts(); renderTable(); }
+
+/* ================= LIVE RELOAD (fetch vers le Web App Apps Script) ================= */
+function tryReload(){
+  const btn = document.getElementById('reload-btn');
+  const msg = document.getElementById('reload-msg');
+  const badge = document.getElementById('live-badge');
+  const cfgBox = document.getElementById('config-error');
+
+  if (!WEBAPP_URL || WEBAPP_URL.indexOf('COLLE_ICI') !== -1) {
+    cfgBox.style.display = 'block';
+    cfgBox.innerHTML = '⚠ <b>WEBAPP_URL</b> non configurée dans index.html. Déploie le Web App Apps Script puis colle son URL /exec en haut du fichier.';
+    badge.textContent = '● snapshot'; badge.className = 'off';
+    return;
+  }
+
+  btn.disabled = true;
+  msg.textContent = 'Lecture du classeur…';
+
+  fetch(WEBAPP_URL, { method: 'GET', cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      if (data && data.error) throw new Error(data.error);
+      applyServerData(data);
+      badge.textContent = '● live'; badge.className = 'on';
+      msg.textContent = 'Connecté — données lues à ' + data.fetchedAt + '.';
+      btn.disabled = false;
+      cacheLastData(data);
+    })
+    .catch(err => {
+      badge.textContent = '● snapshot'; badge.className = 'off';
+      msg.textContent = "Lecture impossible (" + err.message + "). Données affichées = dernier snapshot.";
+      btn.disabled = false;
+      loadCachedData();
+    });
+}
+
+function applyServerData(data){
+  if(!data) return;
+  const t = data.top || {};
+  if(t.comfyCredits!==undefined) live.comfyCredits = Number(t.comfyCredits);
+  if(t.comfyEur!==undefined)     live.comfyEur = Number(t.comfyEur);
+  if(t.comfyDate)                live.comfyDate = t.comfyDate;
+  if(t.runEur!==undefined)       live.runEur = Number(t.runEur);
+  if(t.runDate)                  live.runDate = t.runDate;
+
+  if(Array.isArray(data.comfyReserve) && data.comfyReserve.length){
+    COMFY_RESERVE.length = 0;
+    data.comfyReserve.forEach(p=>COMFY_RESERVE.push(p));
+  }
+  if(Array.isArray(data.runReserve) && data.runReserve.length){
+    RUN_RESERVE_SAMPLE.length = 0;
+    data.runReserve.forEach(p=>RUN_RESERVE_SAMPLE.push(p));
+  }
+  renderAll();
+}
+
+// Petit cache local (mémoire de session uniquement, pas de localStorage
+// dans les environnements d'aperçu — pour la vraie PWA déployée sur
+// GitHub Pages, localStorage fonctionne normalement dans le navigateur).
+function cacheLastData(data){
+  try {
+    if (window.localStorage) {
+      localStorage.setItem('dashboard_last_data', JSON.stringify(data));
+    }
+  } catch(e){}
+}
+function loadCachedData(){
+  try {
+    if (window.localStorage) {
+      const raw = localStorage.getItem('dashboard_last_data');
+      if (raw) { applyServerData(JSON.parse(raw)); }
+    }
+  } catch(e){}
+}
+
+// Chargement automatique à l'ouverture
+window.addEventListener('load', function(){
+  tryReload();
+});
+
+// Enregistrement du service worker (mode hors-ligne)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){ /* silencieux */ });
+  });
+}
+
+// Bouton d'installation PWA (beforeinstallprompt)
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('install-btn').style.display = 'inline-block';
+});
+document.getElementById('install-btn').addEventListener('click', function(){
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt = null;
+  document.getElementById('install-btn').style.display = 'none';
+});
+
+window.addEventListener('error', function(e){
+  if(e.message === 'Script error.' || e.message === 'Script error'){
+    return;
+  }
+  const box = document.getElementById('lib-error');
+  box.style.display = 'block';
+  box.textContent = '⚠ Erreur JS : ' + e.message + ' (ligne ' + e.lineno + ')';
+});
+try{ renderAll(); }catch(e){
+  const box = document.getElementById('lib-error');
+  box.style.display = 'block';
+  box.textContent = '⚠ Erreur au rendu : ' + e.message;
+}
+</script>
+</body>
+</html>
