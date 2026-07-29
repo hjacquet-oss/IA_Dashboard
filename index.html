@@ -3,23 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>Console de crédits — ComfyUI / RunComfy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0d10">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Console de suivi des crédits ComfyUI / RunComfy du studio">
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Crédits IA">
-<meta name="mobile-web-app-capable" content="yes">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
   :root{
     --bg:#0a0d10; --surface:#11161a; --surface2:#161d22; --border:#232b31;
@@ -28,7 +16,7 @@
     --mono:'IBM Plex Mono', monospace; --disp:'Space Grotesk', sans-serif; --body:'Inter', sans-serif;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:28px 20px 60px; padding-top:calc(28px + env(safe-area-inset-top)); padding-bottom:calc(60px + env(safe-area-inset-bottom));}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:28px 20px 60px;}
   .wrap{max-width:1180px;margin:0 auto;}
   header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:10px;}
   .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); margin:0 0 6px;}
@@ -41,11 +29,9 @@
   #live-badge{font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:20px; border:1px solid var(--border); color:var(--muted); margin-left:8px;}
   #live-badge.on{color:var(--teal); border-color:var(--teal);}
   #live-badge.off{color:var(--red); border-color:var(--red);}
-  #install-btn{display:none; margin-top:8px; margin-left:8px; background:var(--teal); border:1px solid var(--teal); color:#0a0d10; font-family:var(--mono); font-size:11px; font-weight:600; padding:7px 12px; border-radius:5px; cursor:pointer;}
   .setup-note{font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
   .setup-note b{color:var(--amber);}
   #lib-error{display:none; font-family:var(--mono); font-size:12px; color:var(--red); background:rgba(255,93,93,.08); border:1px solid var(--red); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
-  #config-error{display:none; font-family:var(--mono); font-size:12px; color:var(--amber); background:rgba(242,169,59,.08); border:1px solid var(--amber); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
   .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:22px;}
   @media (max-width:900px){ .grid-top{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:560px){ .grid-top{grid-template-columns:1fr;} }
@@ -93,19 +79,17 @@
   <header>
     <div>
       <p class="eyebrow">Studio · Consommation IA</p>
-      <h1>Console de crédits ComfyUI / RunComfy <span id="live-badge" class="off">● snapshot</span></h1>
+      <h1>Console de crédits ComfyUI / RunComfy <span id="live-badge" class="on">● live</span></h1>
     </div>
     <div>
       <div class="meta" id="meta-updated">—</div>
       <button class="reload" id="reload-btn" onclick="tryReload()">↻ Recharger depuis le Sheet</button>
-      <button id="install-btn">⭳ Installer l'app</button>
       <span id="reload-msg"></span>
     </div>
   </header>
 
-  <div id="config-error" class="setup-note"></div>
   <div class="setup-note">
-    Données lues via un Web App Apps Script connecté au classeur. <b>Réserve de crédit</b> : live. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer).
+    Données lues directement dans ce classeur via Apps Script (menu <b>Comfy Tools</b>). <b>Réserve de crédit</b> : live, calculée à l'ouverture. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer).
   </div>
   <div id="lib-error"></div>
 
@@ -144,11 +128,11 @@
     <p class="section-title">Réserve de crédit <span class="tag">évolution réelle du solde restant, lue dans le Sheet</span></p>
     <div class="grid-2">
       <div class="card">
-        <h3 style="margin-bottom:8px">ComfyUI — relevés réels</h3>
+        <h3 style="margin-bottom:8px">ComfyUI — relevés réels <span style="opacity:.5">(colonne "Crédits")</span></h3>
         <div class="chart-box"><canvas id="chartReserveComfy"></canvas></div>
       </div>
       <div class="card">
-        <h3 style="margin-bottom:8px">RunComfy — relevés réels</h3>
+        <h3 style="margin-bottom:8px">RunComfy — relevés réels <span style="opacity:.5">(colonne "Solde restant Euro")</span></h3>
         <div class="chart-box"><canvas id="chartReserveRun"></canvas></div>
       </div>
     </div>
@@ -207,20 +191,17 @@
   </section>
 
   <footer>
-    Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, via Web App Apps Script.<br>
-    RunComfy n'a pas d'unité crédit : seule la valeur € (colonne H) fait foi, la colonne G est ignorée.
+    Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, lu directement par Apps Script (menu <strong>Comfy Tools</strong>).<br>
+    RunComfy n'a pas d'unité crédit fiable : la colonne "Solde restant" (interne) est ignorée, seule la colonne <strong>"Solde restant Euro"</strong> alimente le graphe de réserve.
   </footer>
 </div>
 
 <script>
-/* =====================================================================
-   CONFIGURATION — à adapter après déploiement du Web App Apps Script
-   ===================================================================== */
-// Colle ici l'URL /exec obtenue après :
-// Extensions > Apps Script > Déployer > Nouveau déploiement > Application Web
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyZ8kLpVQaXOqIRzRraBvlZhxkuXvzg7k-o2M-dY7gii2bRA-nicZpYxb66wNBtUtON/exec";
+/* ================= Données injectées côté serveur (Apps Script) =================
+   Aucun fetch réseau : le premier rendu est instantané. */
+const INITIAL_DATA = <?!= initialData ?>;
 
-/* ================= DATA snapshot de secours (affichée le temps que le fetch réponde) ================= */
+/* ================= DATA snapshot manuel (hebdo / mensuel / 7 derniers jours) ================= */
 const weeklyComfy = [
   {w:'20/04', credits:9698,  eur:39.42},
   {w:'27/04', credits:39588, eur:161.01},
@@ -261,8 +242,8 @@ const COMFY_RESERVE = [];
 const RUN_RESERVE_SAMPLE = [];
 
 let live = {
-  comfyCredits:128328, comfyEur:537.53, comfyDate:'24/07/2026 16:50:24',
-  runEur:123.42, runDate:'24/07/2026 16:48:33',
+  comfyCredits:0, comfyEur:0, comfyDate:'—',
+  runEur:0, runDate:'—',
   avgDayComfyCredits:8692, avgDayComfyEur:36.38, avgDayRunEur:10.81,
   rateDollar:210, pricePerCredit:0.00476190476
 };
@@ -288,8 +269,8 @@ function renderTop(){
   document.getElementById('comfy-eur-small').textContent = fmtEur(live.comfyEur);
   document.getElementById('run-eur-big').textContent = fmtEur(live.runEur);
 
-  const comfyDaysLeft = live.comfyCredits / live.avgDayComfyCredits;
-  const runDaysLeft = live.runEur / live.avgDayRunEur;
+  const comfyDaysLeft = live.avgDayComfyCredits ? live.comfyCredits / live.avgDayComfyCredits : 0;
+  const runDaysLeft = live.avgDayRunEur ? live.runEur / live.avgDayRunEur : 0;
   drawGauge('gauge-comfy', comfyDaysLeft/30, comfyDaysLeft<7?'#ff5d5d':comfyDaysLeft<15?'#f2a93b':'#2dd4bf');
   drawGauge('gauge-run', runDaysLeft/30, runDaysLeft<7?'#ff5d5d':runDaysLeft<15?'#f2a93b':'#2dd4bf');
   document.getElementById('comfy-days').textContent = '≈ '+comfyDaysLeft.toFixed(1)+' j au rythme actuel';
@@ -410,44 +391,7 @@ document.getElementById('calc-credits').addEventListener('input', runCalc);
 
 function renderAll(){ renderTop(); renderCharts(); renderTable(); }
 
-/* ================= LIVE RELOAD (fetch vers le Web App Apps Script) ================= */
-function tryReload(){
-  const btn = document.getElementById('reload-btn');
-  const msg = document.getElementById('reload-msg');
-  const badge = document.getElementById('live-badge');
-  const cfgBox = document.getElementById('config-error');
-
-  if (!WEBAPP_URL || WEBAPP_URL.indexOf('COLLE_ICI') !== -1) {
-    cfgBox.style.display = 'block';
-    cfgBox.innerHTML = '⚠ <b>WEBAPP_URL</b> non configurée dans index.html. Déploie le Web App Apps Script puis colle son URL /exec en haut du fichier.';
-    badge.textContent = '● snapshot'; badge.className = 'off';
-    return;
-  }
-
-  btn.disabled = true;
-  msg.textContent = 'Lecture du classeur…';
-
-  fetch(WEBAPP_URL, { method: 'GET', cache: 'no-store' })
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(data => {
-      if (data && data.error) throw new Error(data.error);
-      applyServerData(data);
-      badge.textContent = '● live'; badge.className = 'on';
-      msg.textContent = 'Connecté — données lues à ' + data.fetchedAt + '.';
-      btn.disabled = false;
-      cacheLastData(data);
-    })
-    .catch(err => {
-      badge.textContent = '● snapshot'; badge.className = 'off';
-      msg.textContent = "Lecture impossible (" + err.message + "). Données affichées = dernier snapshot.";
-      btn.disabled = false;
-      loadCachedData();
-    });
-}
-
+/* ================= Application des données (initiales ou rafraîchies) ================= */
 function applyServerData(data){
   if(!data) return;
   const t = data.top || {};
@@ -457,61 +401,40 @@ function applyServerData(data){
   if(t.runEur!==undefined)       live.runEur = Number(t.runEur);
   if(t.runDate)                  live.runDate = t.runDate;
 
-  if(Array.isArray(data.comfyReserve) && data.comfyReserve.length){
-    COMFY_RESERVE.length = 0;
+  COMFY_RESERVE.length = 0;
+  if(Array.isArray(data.comfyReserve)){
     data.comfyReserve.forEach(p=>COMFY_RESERVE.push(p));
   }
-  if(Array.isArray(data.runReserve) && data.runReserve.length){
-    RUN_RESERVE_SAMPLE.length = 0;
+  RUN_RESERVE_SAMPLE.length = 0;
+  if(Array.isArray(data.runReserve)){
     data.runReserve.forEach(p=>RUN_RESERVE_SAMPLE.push(p));
   }
   renderAll();
 }
 
-// Petit cache local (mémoire de session uniquement, pas de localStorage
-// dans les environnements d'aperçu — pour la vraie PWA déployée sur
-// GitHub Pages, localStorage fonctionne normalement dans le navigateur).
-function cacheLastData(data){
-  try {
-    if (window.localStorage) {
-      localStorage.setItem('dashboard_last_data', JSON.stringify(data));
-    }
-  } catch(e){}
-}
-function loadCachedData(){
-  try {
-    if (window.localStorage) {
-      const raw = localStorage.getItem('dashboard_last_data');
-      if (raw) { applyServerData(JSON.parse(raw)); }
-    }
-  } catch(e){}
-}
+/* ================= Rechargement manuel (bouton) — appel Apps Script direct ================= */
+function tryReload(){
+  const btn = document.getElementById('reload-btn');
+  const msg = document.getElementById('reload-msg');
+  const badge = document.getElementById('live-badge');
 
-// Chargement automatique à l'ouverture
-window.addEventListener('load', function(){
-  tryReload();
-});
+  btn.disabled = true;
+  msg.textContent = 'Lecture du classeur…';
 
-// Enregistrement du service worker (mode hors-ligne)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){ /* silencieux */ });
-  });
+  google.script.run
+    .withSuccessHandler(function(data){
+      applyServerData(data);
+      badge.textContent = '● live'; badge.className = 'on';
+      msg.textContent = 'Connecté — données lues à ' + data.fetchedAt + '.';
+      btn.disabled = false;
+    })
+    .withFailureHandler(function(err){
+      badge.textContent = '● erreur'; badge.className = 'off';
+      msg.textContent = "Lecture impossible (" + (err && err.message ? err.message : err) + ").";
+      btn.disabled = false;
+    })
+    .refreshDashboardData();
 }
-
-// Bouton d'installation PWA (beforeinstallprompt)
-let deferredInstallPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  document.getElementById('install-btn').style.display = 'inline-block';
-});
-document.getElementById('install-btn').addEventListener('click', function(){
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  deferredInstallPrompt = null;
-  document.getElementById('install-btn').style.display = 'none';
-});
 
 window.addEventListener('error', function(e){
   if(e.message === 'Script error.' || e.message === 'Script error'){
@@ -521,11 +444,25 @@ window.addEventListener('error', function(e){
   box.style.display = 'block';
   box.textContent = '⚠ Erreur JS : ' + e.message + ' (ligne ' + e.lineno + ')';
 });
-try{ renderAll(); }catch(e){
+
+// Premier rendu : données déjà injectées côté serveur, aucun aller-retour
+// réseau nécessaire -> affichage instantané dès l'ouverture de la modale.
+try{
+  applyServerData(INITIAL_DATA);
+}catch(e){
   const box = document.getElementById('lib-error');
   box.style.display = 'block';
-  box.textContent = '⚠ Erreur au rendu : ' + e.message;
+  box.textContent = '⚠ Erreur au rendu initial : ' + e.message;
 }
+</script>
+
+<!-- Chart.js chargé en fin de body : le reste de la page (cartes, texte)
+     s'affiche sans attendre le téléchargement de la librairie. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script>
+  // Les charts nécessitent Chart.js : on les (re)rend une fois la lib chargée.
+  renderCharts();
 </script>
 </body>
 </html>
