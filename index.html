@@ -79,17 +79,17 @@
   <header>
     <div>
       <p class="eyebrow">Studio · Consommation IA</p>
-      <h1>Console de crédits ComfyUI / RunComfy <span id="live-badge" class="on">● live</span></h1>
+      <h1>Console de crédits ComfyUI / RunComfy <span id="live-badge" class="off">● hors ligne</span></h1>
     </div>
     <div>
       <div class="meta" id="meta-updated">—</div>
-      <button class="reload" id="reload-btn" onclick="tryReload()">↻ Recharger depuis le Sheet</button>
+      <button class="reload" id="reload-btn" onclick="tryReload()">↻ Recharger depuis Apps Script</button>
       <span id="reload-msg"></span>
     </div>
   </header>
 
   <div class="setup-note">
-    Données lues directement dans ce classeur via Apps Script (menu <b>Comfy Tools</b>). <b>Réserve de crédit</b> : live, calculée à l'ouverture. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer).
+    Version hébergée sur GitHub Pages : les données sont lues via <b>fetch()</b> vers l'URL de ton Web App Apps Script déployé (voir <code>APPS_SCRIPT_URL</code> en haut du script). <b>Réserve de crédit</b> : live, récupérée au chargement de la page. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer dans ce fichier).
   </div>
   <div id="lib-error"></div>
 
@@ -125,7 +125,7 @@
   </div>
 
   <section>
-    <p class="section-title">Réserve de crédit <span class="tag">évolution réelle du solde restant, lue dans le Sheet</span></p>
+    <p class="section-title">Réserve de crédit <span class="tag">évolution réelle du solde restant, via Apps Script</span></p>
     <div class="grid-2">
       <div class="card">
         <h3 style="margin-bottom:8px">ComfyUI — relevés réels <span style="opacity:.5">(colonne "Crédits")</span></h3>
@@ -191,15 +191,46 @@
   </section>
 
   <footer>
-    Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, lu directement par Apps Script (menu <strong>Comfy Tools</strong>).<br>
+    Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, exposé via un Web App Apps Script (<code>doGet</code>).<br>
     RunComfy n'a pas d'unité crédit fiable : la colonne "Solde restant" (interne) est ignorée, seule la colonne <strong>"Solde restant Euro"</strong> alimente le graphe de réserve.
   </footer>
 </div>
 
 <script>
-/* ================= Données injectées côté serveur (Apps Script) =================
-   Aucun fetch réseau : le premier rendu est instantané. */
-const INITIAL_DATA = <?!= initialData ?>;
+/* ================================================================
+   CONFIG — à adapter avant déploiement sur GitHub Pages
+   ================================================================
+   Colle ici l'URL de ton Web App Apps Script déployé
+   (Déployer > Nouveau déploiement > Application Web > Exécuter en tant que : Moi
+    > Qui a accès : Tout le monde). L'URL ressemble à :
+   https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXX/exec
+
+   Le endpoint doit répondre à une requête GET (fonction doGet(e) côté
+   Apps Script) avec un JSON de cette forme, renvoyé via
+   ContentService.createTextOutput(JSON.stringify(payload))
+     .setMimeType(ContentService.MimeType.JSON) :
+
+   {
+     "fetchedAt": "30/07/2026 14:32",
+     "top": {
+       "comfyCredits": 12345,
+       "comfyEur": 58.80,
+       "comfyDate": "30/07/2026",
+       "runEur": 210.40,
+       "runDate": "30/07/2026"
+     },
+     "comfyReserve": [["01/07", 98000], ["02/07", 95200], ...],
+     "runReserve":   [["01/07", 320.10], ["02/07", 305.50], ...]
+   }
+
+   C'est exactement la logique que fait déjà ta fonction
+   refreshDashboardData() côté Apps Script : il suffit de l'exposer
+   aussi via doGet(e) pour qu'elle soit joignable en fetch() depuis
+   une page hébergée hors de Google (GitHub Pages n'a pas accès à
+   google.script.run, qui ne fonctionne que dans le conteneur Apps
+   Script lui-même).
+   ================================================================ */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfjxl4pYoNCKHmle_gCzfh15NwFlXmUealUosBNdOm5sw6qEYm2X8pPGiqHXTjYvkg/exec';
 
 /* ================= DATA snapshot manuel (hebdo / mensuel / 7 derniers jours) ================= */
 const weeklyComfy = [
@@ -391,7 +422,7 @@ document.getElementById('calc-credits').addEventListener('input', runCalc);
 
 function renderAll(){ renderTop(); renderCharts(); renderTable(); }
 
-/* ================= Application des données (initiales ou rafraîchies) ================= */
+/* ================= Application des données reçues du Web App ================= */
 function applyServerData(data){
   if(!data) return;
   const t = data.top || {};
@@ -412,29 +443,37 @@ function applyServerData(data){
   renderAll();
 }
 
-/* ================= Rechargement manuel (bouton) — appel Apps Script direct ================= */
-function tryReload(){
+/* ================= Chargement des données via fetch() vers le Web App Apps Script ================= */
+async function fetchLiveData(isManualReload){
   const btn = document.getElementById('reload-btn');
   const msg = document.getElementById('reload-msg');
   const badge = document.getElementById('live-badge');
 
-  btn.disabled = true;
-  msg.textContent = 'Lecture du classeur…';
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('COLLE_ICI') === 0){
+    badge.textContent = '● non configuré'; badge.className = 'off';
+    msg.textContent = "Renseigne APPS_SCRIPT_URL en haut du script avec l'URL de ton Web App Apps Script déployé.";
+    return;
+  }
 
-  google.script.run
-    .withSuccessHandler(function(data){
-      applyServerData(data);
-      badge.textContent = '● live'; badge.className = 'on';
-      msg.textContent = 'Connecté — données lues à ' + data.fetchedAt + '.';
-      btn.disabled = false;
-    })
-    .withFailureHandler(function(err){
-      badge.textContent = '● erreur'; badge.className = 'off';
-      msg.textContent = "Lecture impossible (" + (err && err.message ? err.message : err) + ").";
-      btn.disabled = false;
-    })
-    .refreshDashboardData();
+  if(isManualReload){ btn.disabled = true; }
+  msg.textContent = 'Lecture du Web App…';
+
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {method:'GET'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    applyServerData(data);
+    badge.textContent = '● live'; badge.className = 'on';
+    msg.textContent = 'Connecté — données lues à ' + (data.fetchedAt || '—') + '.';
+  }catch(err){
+    badge.textContent = '● erreur'; badge.className = 'off';
+    msg.textContent = "Lecture impossible (" + (err && err.message ? err.message : err) + "). Vérifie que le Web App est déployé avec l'accès \"Tout le monde\".";
+  }finally{
+    if(isManualReload){ btn.disabled = false; }
+  }
 }
+
+function tryReload(){ fetchLiveData(true); }
 
 window.addEventListener('error', function(e){
   if(e.message === 'Script error.' || e.message === 'Script error'){
@@ -445,15 +484,10 @@ window.addEventListener('error', function(e){
   box.textContent = '⚠ Erreur JS : ' + e.message + ' (ligne ' + e.lineno + ')';
 });
 
-// Premier rendu : données déjà injectées côté serveur, aucun aller-retour
-// réseau nécessaire -> affichage instantané dès l'ouverture de la modale.
-try{
-  applyServerData(INITIAL_DATA);
-}catch(e){
-  const box = document.getElementById('lib-error');
-  box.style.display = 'block';
-  box.textContent = '⚠ Erreur au rendu initial : ' + e.message;
-}
+// Premier rendu : on affiche déjà les graphes snapshot (hebdo/mensuel/7j)
+// puis on tente de récupérer les données live via fetch().
+renderTable();
+fetchLiveData(false);
 </script>
 
 <!-- Chart.js chargé en fin de body : le reste de la page (cartes, texte)
