@@ -21,9 +21,9 @@
     --radius:14px;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:16px 26px 20px;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:12px 26px 12px;}
   .wrap{max-width:1900px;margin:0 auto;}
-  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; padding-bottom:10px; margin-bottom:12px;}
+  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; padding-bottom:6px; margin-bottom:8px;}
   .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); margin:0 0 6px; font-weight:600;}
   h1{font-family:var(--disp); font-weight:700; font-size:24px; margin:0; letter-spacing:-0.01em; color:var(--text);}
   .meta{font-family:var(--mono); font-size:12px; color:var(--muted); text-align:right;}
@@ -39,11 +39,11 @@
   #lib-error{display:none; font-family:var(--mono); font-size:12px; color:var(--red); background:#fdeceb; border:1px solid var(--red); border-radius:12px; padding:10px 14px; margin-bottom:16px;}
   #lib-error button{background:var(--surface); border:1px solid var(--red); color:var(--red); font-family:var(--mono); font-size:11px; padding:4px 10px; border-radius:16px; cursor:pointer;}
 
-  .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:16px;}
+  .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:10px;}
   @media (max-width:1100px){ .grid-top{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:560px){ .grid-top{grid-template-columns:1fr;} }
 
-  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow);}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; box-shadow:var(--shadow);}
   .card h3{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 8px; font-weight:600;}
   .gauge-card{display:flex; align-items:center; gap:14px;}
   .gauge-num{font-family:var(--disp);}
@@ -62,7 +62,7 @@
   .delta.down{background:var(--green-soft); color:var(--green);}
   .card-dark .delta.down{background:var(--green-dark); color:#5be3ae;}
 
-  section{margin-bottom:16px;}
+  section{margin-bottom:10px;}
   .section-title{font-family:var(--disp); font-size:15px; font-weight:700; margin:0 0 10px; display:flex; align-items:center; gap:8px; color:var(--text);}
 
   /* ===== Évolution détaillée : grille 2x2 de graphs + bandeau détail mensuel =====
@@ -75,12 +75,12 @@
   @media (max-width:700px){ .charts-2x2{grid-template-columns:1fr;} }
   .chart-card{display:flex; flex-direction:column;}
   .chart-card-wide{grid-column:1 / -1;}
-  .chart-card-wide .chart-box{height:280px;}
+  .chart-card-wide .chart-box{height:240px;}
   .tab-btn.period-active{color:var(--blue); border-color:var(--blue); background:var(--blue-soft);}
-  .chart-legend{display:flex; gap:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-bottom:6px;}
+  .chart-legend{display:flex; gap:14px; font-family:var(--mono); font-size:11.5px; font-weight:600; color:var(--text); margin-bottom:6px;}
   .chart-legend span{display:inline-flex; align-items:center; gap:5px;}
   .chart-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
-  .chart-box{position:relative; height:220px;}
+  .chart-box{position:relative; height:190px;}
   .chart-box canvas{position:absolute; top:0; left:0; width:100%!important; height:100%!important;}
 
   .monthly-card{display:flex; flex-direction:column; padding:0; overflow:hidden;}
@@ -91,7 +91,7 @@
   .rate-line b{color:var(--text); font-weight:600;}
 
   /* ===== Bandeau du bas : taux / prix / calculateur, tout sur une ligne ===== */
-  .bottom-bar{display:flex; align-items:center; gap:22px; flex-wrap:wrap; padding:14px 20px;}
+  .bottom-bar{display:flex; align-items:center; gap:22px; flex-wrap:wrap; padding:10px 20px;}
   .bb-divider{width:1px; align-self:stretch; background:var(--border);}
   .bb-item{font-family:var(--mono); font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:2px;}
   .bb-item b{color:var(--text); font-size:14px; font-weight:600;}
@@ -182,16 +182,22 @@
           <div class="chart-box"><canvas id="chartReserveRun"></canvas></div>
         </div>
         <div class="card chart-card chart-card-wide">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:10px;">
             <h3 style="margin-bottom:0" id="weekly-last7-title">Consommation hebdomadaire</h3>
-            <div class="tabs" id="period-tabs" style="margin-bottom:0">
-              <button class="tab-btn period-active" data-period="weekly" onclick="switchPeriod('weekly')">Hebdomadaire</button>
-              <button class="tab-btn" data-period="last7" onclick="switchPeriod('last7')">7 derniers jours</button>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div class="tabs" id="dataset-tabs" style="margin-bottom:0">
+                <button class="tab-btn active" data-tab="comfy" onclick="switchWeeklyTab('comfy')">ComfyUI</button>
+                <button class="tab-btn" data-tab="run" onclick="switchWeeklyTab('run')">RunComfy</button>
+              </div>
+              <div class="chart-legend" id="last7-legend" style="margin-bottom:0; visibility:hidden; position:absolute;">
+                <span><i style="background:#2f6feb"></i>ComfyUI</span>
+                <span><i style="background:#16a56a"></i>RunComfy</span>
+              </div>
+              <div class="tabs" id="period-tabs" style="margin-bottom:0">
+                <button class="tab-btn period-active" data-period="weekly" onclick="switchPeriod('weekly')">Hebdomadaire</button>
+                <button class="tab-btn" data-period="last7" onclick="switchPeriod('last7')">7 derniers jours</button>
+              </div>
             </div>
-          </div>
-          <div class="tabs" id="dataset-tabs">
-            <button class="tab-btn active" data-tab="comfy" onclick="switchWeeklyTab('comfy')">ComfyUI</button>
-            <button class="tab-btn" data-tab="run" onclick="switchWeeklyTab('run')">RunComfy</button>
           </div>
           <div class="chart-box"><canvas id="chartWeekly"></canvas></div>
         </div>
@@ -485,6 +491,9 @@ function switchPeriod(period){
   currentPeriod = period;
   document.querySelectorAll('#period-tabs .tab-btn').forEach(b=>b.classList.toggle('period-active', b.dataset.period===period));
   document.getElementById('dataset-tabs').style.visibility = period==='weekly' ? 'visible' : 'hidden';
+  document.getElementById('dataset-tabs').style.position = period==='weekly' ? 'static' : 'absolute';
+  document.getElementById('last7-legend').style.visibility = period==='last7' ? 'visible' : 'hidden';
+  document.getElementById('last7-legend').style.position = period==='last7' ? 'static' : 'absolute';
   document.getElementById('weekly-last7-title').textContent = period==='weekly' ? 'Consommation hebdomadaire' : '7 derniers jours (€ / jour)';
   renderWeeklyChart();
 }
@@ -508,7 +517,8 @@ function renderWeeklyChart(){
       ]},
       options:{
         plugins:{
-          datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:8.5},
+          legend:{display:false},
+          datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:11, weight:'700'},
             formatter:(v,ctx)=>{
               if(ctx.datasetIndex===0) return fmtInt(last7Comfy[ctx.dataIndex].cr)+' cr.\n'+fmtEur(v);
               return fmtEur(v);
@@ -536,7 +546,7 @@ function renderWeeklyChart(){
     }]},
     options:{
       plugins:{ legend:{display:false},
-        datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:8.5},
+        datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:11, weight:'700'},
           formatter:(v,ctx)=> isComfy ? (fmtInt(src[ctx.dataIndex].credits)+' cr.\n'+fmtEur(v)) : fmtEur(v)
         }
       },
