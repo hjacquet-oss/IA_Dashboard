@@ -75,12 +75,12 @@
   @media (max-width:700px){ .charts-2x2{grid-template-columns:1fr;} }
   .chart-card{display:flex; flex-direction:column;}
   .chart-card-wide{grid-column:1 / -1;}
-  .chart-card-wide .chart-box{height:200px;}
+  .chart-card-wide .chart-box{height:280px;}
   .tab-btn.period-active{color:var(--blue); border-color:var(--blue); background:var(--blue-soft);}
   .chart-legend{display:flex; gap:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-bottom:6px;}
   .chart-legend span{display:inline-flex; align-items:center; gap:5px;}
   .chart-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
-  .chart-box{position:relative; height:148px;}
+  .chart-box{position:relative; height:220px;}
   .chart-box canvas{position:absolute; top:0; left:0; width:100%!important; height:100%!important;}
 
   .monthly-card{display:flex; flex-direction:column; padding:0; overflow:hidden;}
@@ -484,7 +484,7 @@ let weeklyTab = 'comfy';
 function switchPeriod(period){
   currentPeriod = period;
   document.querySelectorAll('#period-tabs .tab-btn').forEach(b=>b.classList.toggle('period-active', b.dataset.period===period));
-  document.getElementById('dataset-tabs').style.display = period==='weekly' ? 'flex' : 'none';
+  document.getElementById('dataset-tabs').style.visibility = period==='weekly' ? 'visible' : 'hidden';
   document.getElementById('weekly-last7-title').textContent = period==='weekly' ? 'Consommation hebdomadaire' : '7 derniers jours (€ / jour)';
   renderWeeklyChart();
 }
