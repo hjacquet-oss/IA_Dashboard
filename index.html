@@ -7,70 +7,116 @@
 <meta name="description" content="Console de suivi des crédits ComfyUI / RunComfy du studio">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0d10; --surface:#11161a; --surface2:#161d22; --border:#232b31;
-    --text:#e8ecee; --muted:#7c8791;
-    --teal:#2dd4bf; --amber:#f2a93b; --red:#ff5d5d;
+    --bg:#f3f5f9; --surface:#ffffff; --surface2:#eef1f6; --border:#e6e9f0;
+    --navy:#0d1526; --navy2:#161f33;
+    --text:#12151c; --muted:#7c8494; --muted-dark:#8b93a8;
+    --blue:#2f6feb; --blue-soft:#eaf1ff;
+    --green:#16a56a; --green-soft:#e7f8f1; --green-dark:#1c3d33;
+    --amber:#f2a93b; --red:#ef4444;
     --mono:'IBM Plex Mono', monospace; --disp:'Space Grotesk', sans-serif; --body:'Inter', sans-serif;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.05);
+    --radius:14px;
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:28px 20px 60px;}
-  .wrap{max-width:1180px;margin:0 auto;}
-  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; border-bottom:1px solid var(--border); padding-bottom:18px; margin-bottom:10px;}
-  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); margin:0 0 6px;}
-  h1{font-family:var(--disp); font-weight:700; font-size:26px; margin:0; letter-spacing:-0.01em;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--body); padding:16px 26px 20px;}
+  .wrap{max-width:1900px;margin:0 auto;}
+  header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; padding-bottom:10px; margin-bottom:12px;}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); margin:0 0 6px; font-weight:600;}
+  h1{font-family:var(--disp); font-weight:700; font-size:24px; margin:0; letter-spacing:-0.01em; color:var(--text);}
   .meta{font-family:var(--mono); font-size:12px; color:var(--muted); text-align:right;}
-  .reload{margin-top:8px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:11px; padding:7px 12px; border-radius:5px; cursor:pointer;}
-  .reload:hover{border-color:var(--teal); color:var(--teal);}
+  .reload{margin-top:8px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-weight:500; font-size:11px; padding:7px 15px; border-radius:20px; cursor:pointer; box-shadow:var(--shadow);}
+  .reload:hover{border-color:var(--blue); color:var(--blue);}
   .reload[disabled]{opacity:.5; cursor:wait;}
-  #reload-msg{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;display:block; max-width:340px;}
-  #live-badge{font-family:var(--mono); font-size:10px; padding:3px 8px; border-radius:20px; border:1px solid var(--border); color:var(--muted); margin-left:8px;}
-  #live-badge.on{color:var(--teal); border-color:var(--teal);}
-  #live-badge.off{color:var(--red); border-color:var(--red);}
-  .setup-note{font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
-  .setup-note b{color:var(--amber);}
-  #lib-error{display:none; font-family:var(--mono); font-size:12px; color:var(--red); background:rgba(255,93,93,.08); border:1px solid var(--red); border-radius:8px; padding:10px 14px; margin-bottom:22px;}
-  .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:22px;}
-  @media (max-width:900px){ .grid-top{grid-template-columns:repeat(2,1fr);} }
+  #reload-msg{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;display:block; max-width:340px; text-align:right;}
+  #live-badge{font-family:var(--mono); font-size:10px; font-weight:600; padding:4px 10px; border-radius:20px; border:1px solid var(--green); background:var(--green-soft); color:var(--green); margin-left:10px; vertical-align:middle;}
+  #live-badge.on{color:var(--green); border-color:var(--green); background:var(--green-soft);}
+  #live-badge.off{color:var(--red); border-color:var(--red); background:#fdeceb;}
+  .setup-note{font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:16px; box-shadow:var(--shadow); line-height:1.6;}
+  .setup-note b{color:var(--blue);}
+  #lib-error{display:none; font-family:var(--mono); font-size:12px; color:var(--red); background:#fdeceb; border:1px solid var(--red); border-radius:12px; padding:10px 14px; margin-bottom:16px;}
+  #lib-error button{background:var(--surface); border:1px solid var(--red); color:var(--red); font-family:var(--mono); font-size:11px; padding:4px 10px; border-radius:16px; cursor:pointer;}
+
+  .grid-top{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:16px;}
+  @media (max-width:1100px){ .grid-top{grid-template-columns:repeat(2,1fr);} }
   @media (max-width:560px){ .grid-top{grid-template-columns:1fr;} }
-  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px;}
-  .card h3{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 12px; font-weight:500;}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow);}
+  .card h3{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:0 0 8px; font-weight:600;}
   .gauge-card{display:flex; align-items:center; gap:14px;}
-  .gauge-num{font-family:var(--mono);}
-  .gauge-num .big{font-size:24px; font-weight:600; display:block; line-height:1;}
-  .gauge-num .small{font-size:12px; color:var(--muted);}
-  .gauge-num .days{font-size:12px; margin-top:8px; display:block;}
-  .stat .big{font-family:var(--mono); font-size:26px; font-weight:600; display:block;}
-  .stat .sub{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:4px;}
-  .stat .delta{font-family:var(--mono); font-size:11px; margin-top:8px; display:inline-block; padding:2px 7px; border-radius:4px;}
-  .delta.up{background:rgba(255,93,93,.12); color:var(--red);}
-  .delta.down{background:rgba(45,212,191,.12); color:var(--teal);}
-  section{margin-bottom:24px;}
-  .section-title{font-family:var(--disp); font-size:16px; font-weight:600; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
-  .section-title .tag{font-family:var(--mono); font-size:10px; color:var(--muted); border:1px solid var(--border); padding:2px 6px; border-radius:4px;}
-  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
-  @media (max-width:900px){ .grid-2{grid-template-columns:1fr;} }
-  .chart-box{position:relative; height:270px;}
+  .gauge-num{font-family:var(--disp);}
+  .gauge-num .big{font-size:22px; font-weight:700; display:block; line-height:1.1; font-family:var(--disp); color:var(--text);}
+  .gauge-num .small{font-size:15px; font-weight:700; font-family:var(--disp); color:var(--text);}
+  .gauge-num .days{font-size:12px; margin-top:6px; display:block; color:var(--green); font-family:var(--mono); font-weight:700;}
+
+  .card-dark{background:var(--navy); border:1px solid var(--navy);}
+  .card-dark h3{color:var(--muted-dark);}
+  .stat .big{font-family:var(--disp); font-size:24px; font-weight:700; display:block; color:var(--text);}
+  .card-dark .big{color:#fff;}
+  .stat .sub{font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:6px;}
+  .card-dark .sub{color:var(--muted-dark);}
+  .stat .delta{font-family:var(--mono); font-size:11px; margin-top:9px; display:inline-block; padding:3px 9px; border-radius:20px; font-weight:600;}
+  .delta.up{background:#fdeceb; color:var(--red);}
+  .delta.down{background:var(--green-soft); color:var(--green);}
+  .card-dark .delta.down{background:var(--green-dark); color:#5be3ae;}
+
+  section{margin-bottom:16px;}
+  .section-title{font-family:var(--disp); font-size:15px; font-weight:700; margin:0 0 10px; display:flex; align-items:center; gap:8px; color:var(--text);}
+
+  /* ===== Évolution détaillée : grille 2x2 de graphs + bandeau détail mensuel =====
+     NB : chaque chart-box a une hauteur FIXE en px (pas de flex:1 / 1fr sur un
+     conteneur de hauteur auto) : Chart.js a besoin d'un parent avec une taille
+     réelle et non-nulle dès le premier rendu, sinon le canvas reste à 0x0. */
+  .evolution-grid{display:grid; grid-template-columns:2.05fr 1fr; gap:14px; align-items:stretch;}
+  @media (max-width:1200px){ .evolution-grid{grid-template-columns:1fr;} }
+  .charts-2x2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:700px){ .charts-2x2{grid-template-columns:1fr;} }
+  .chart-card{display:flex; flex-direction:column;}
+  .chart-legend{display:flex; gap:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-bottom:6px;}
+  .chart-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .chart-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .chart-box{position:relative; height:148px;}
   .chart-box canvas{position:absolute; top:0; left:0; width:100%!important; height:100%!important;}
-  .rate-line{display:flex; gap:22px; flex-wrap:wrap; align-items:center; font-family:var(--mono); font-size:13px; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:14px;}
+
+  .monthly-card{display:flex; flex-direction:column; padding:0; overflow:hidden;}
+  .monthly-header{background:var(--navy); color:#fff; font-family:var(--disp); font-weight:700; font-size:13px; letter-spacing:.04em; padding:10px 16px; text-transform:uppercase;}
+  .monthly-body{padding:4px 14px 10px; overflow:auto; flex:1;}
+
+  .rate-line{display:flex; gap:22px; flex-wrap:wrap; align-items:center; font-family:var(--mono); font-size:13px; color:var(--muted);}
   .rate-line b{color:var(--text); font-weight:600;}
-  .calc{display:grid; grid-template-columns:1fr auto; gap:14px; align-items:end;}
-  @media (max-width:560px){ .calc{grid-template-columns:1fr;} }
-  .calc label{font-family:var(--mono); font-size:11px; color:var(--muted); display:block; margin-bottom:6px;}
-  .calc input{width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:15px; padding:9px 10px; border-radius:6px;}
-  .calc input:focus{outline:none; border-color:var(--teal);}
-  .calc-result{background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-family:var(--mono); min-width:160px;}
-  .calc-result .val{font-size:24px; font-weight:600; color:var(--amber);}
-  .calc-result .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
-  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:13px;}
-  th, td{text-align:right; padding:9px 10px; border-bottom:1px solid var(--border);}
+
+  /* ===== Bandeau du bas : taux / prix / calculateur, tout sur une ligne ===== */
+  .bottom-bar{display:flex; align-items:center; gap:22px; flex-wrap:wrap; padding:14px 20px;}
+  .bb-divider{width:1px; align-self:stretch; background:var(--border);}
+  .bb-item{font-family:var(--mono); font-size:13px; color:var(--muted); display:flex; flex-direction:column; gap:2px;}
+  .bb-item b{color:var(--text); font-size:14px; font-weight:600;}
+  .bb-calc{display:flex; align-items:center; gap:12px; flex:1; min-width:260px;}
+  .bb-calc label{font-family:var(--mono); font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;}
+  .bb-calc input{width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:14px; padding:9px 12px; border-radius:10px;}
+  .bb-calc input:focus{outline:none; border-color:var(--blue);}
+  .bb-result{background:var(--green); border:none; border-radius:12px; padding:10px 20px; font-family:var(--mono); color:#fff; display:flex; align-items:center; gap:10px; white-space:nowrap;}
+  .bb-result .lbl{font-size:11px; opacity:.85; text-transform:uppercase; letter-spacing:.04em; font-family:var(--body); font-weight:500;}
+  .bb-result .val{font-size:18px; font-weight:700; font-family:var(--disp);}
+
+  .tabs{display:flex; gap:8px; margin-bottom:8px;}
+  .tab-btn{font-family:var(--mono); font-size:11px; font-weight:600; background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:6px 13px; border-radius:20px; cursor:pointer;}
+  .tab-btn.active[data-tab="comfy"]{color:var(--blue); border-color:var(--blue); background:var(--blue-soft);}
+  .tab-btn.active[data-tab="run"]{color:var(--green); border-color:var(--green); background:var(--green-soft);}
+
+  table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px;}
+  th, td{text-align:right; padding:9px 8px; border-bottom:1px solid var(--border);}
   th:first-child, td:first-child{text-align:left; color:var(--muted);}
-  th{color:var(--muted); font-weight:500; text-transform:uppercase; font-size:10px; letter-spacing:.06em;}
+  th{color:var(--muted); font-weight:700; text-transform:uppercase; font-size:9.5px; letter-spacing:.05em;}
   tbody tr:hover{background:var(--surface2);}
-  tfoot td{font-weight:600; color:var(--text); border-top:1px solid var(--border); border-bottom:none;}
-  footer{font-family:var(--mono); font-size:11px; color:var(--muted); text-align:center; margin-top:30px; line-height:1.7;}
+  tfoot td{font-weight:700; color:var(--text); border-top:1px solid var(--border); border-bottom:none;}
+  td.month, th.month{font-weight:700; color:var(--text);}
+  .col-comfy{color:var(--blue); font-weight:600;}
+  .col-run{color:var(--green); font-weight:600;}
+  th.col-comfy{color:var(--blue); font-weight:700;}
+  th.col-run{color:var(--green); font-weight:700;}
+  footer{font-family:var(--mono); font-size:11px; color:var(--muted); text-align:center; margin-top:20px; line-height:1.7;}
 </style>
 </head>
 <body>
@@ -89,13 +135,13 @@
   </header>
 
   <div class="setup-note">
-    Version hébergée sur GitHub Pages : les données sont lues via <b>fetch()</b> vers l'URL de ton Web App Apps Script déployé (voir <code>APPS_SCRIPT_URL</code> en haut du script). <b>Réserve de crédit</b> : live, récupérée au chargement de la page. <b>Hebdo / mensuel / 7 derniers jours</b> : snapshot manuel (à régénérer dans ce fichier).
+    Version hébergée sur GitHub Pages : les données sont lues via <b>fetch()</b> vers l'URL de ton Web App Apps Script déployé (voir <code>APPS_SCRIPT_URL</code> en haut du script). <b>Réserve de crédit</b> : live, récupérée au chargement de la page. <b>Hebdo / 7 derniers jours</b> : calculés côté Apps Script s'ils sont présents dans la réponse JSON, sinon repli sur le dernier snapshot connu ci-dessous. <b>Mensuel</b> : snapshot manuel (à régénérer dans ce fichier).
   </div>
   <div id="lib-error"></div>
 
   <div class="grid-top">
     <div class="card gauge-card">
-      <svg id="gauge-comfy" width="70" height="70" viewBox="0 0 70 70"></svg>
+      <svg id="gauge-comfy" width="62" height="62" viewBox="0 0 70 70"></svg>
       <div class="gauge-num">
         <h3 style="margin-bottom:2px">ComfyUI — solde <span style="opacity:.5">(G5/H5)</span></h3>
         <span class="big" id="comfy-credits-big">—</span>
@@ -104,20 +150,20 @@
       </div>
     </div>
     <div class="card gauge-card">
-      <svg id="gauge-run" width="70" height="70" viewBox="0 0 70 70"></svg>
+      <svg id="gauge-run" width="62" height="62" viewBox="0 0 70 70"></svg>
       <div class="gauge-num">
         <h3 style="margin-bottom:2px" id="run-h6">RunComfy — solde <span style="opacity:.5">(H6)</span></h3>
         <span class="big" id="run-eur-big">—</span>
         <span class="days" id="run-days"></span>
       </div>
     </div>
-    <div class="card stat">
+    <div class="card card-dark stat">
       <h3>Coût moyen / jour (total)</h3>
       <span class="big" id="avg-day-total">—</span>
       <span class="sub" id="avg-day-detail"></span>
       <span class="delta down" id="avg-month-total"></span>
     </div>
-    <div class="card stat">
+    <div class="card card-dark stat">
       <h3>Juillet 2026 (au 24/07)</h3>
       <span class="big" id="july-total">—</span>
       <span class="sub" id="july-detail"></span>
@@ -125,70 +171,74 @@
   </div>
 
   <section>
-    <p class="section-title">Réserve de crédit <span class="tag">évolution réelle du solde restant, via Apps Script</span></p>
-    <div class="grid-2">
-      <div class="card">
-        <h3 style="margin-bottom:8px">ComfyUI — relevés réels <span style="opacity:.5">(colonne "Crédits")</span></h3>
-        <div class="chart-box"><canvas id="chartReserveComfy"></canvas></div>
-      </div>
-      <div class="card">
-        <h3 style="margin-bottom:8px">RunComfy — relevés réels <span style="opacity:.5">(colonne "Solde restant Euro")</span></h3>
-        <div class="chart-box"><canvas id="chartReserveRun"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <p class="section-title">Consommation hebdomadaire <span class="tag">snapshot manuel</span></p>
-    <div class="grid-2">
-      <div class="card"><h3>ComfyUI</h3><div class="chart-box"><canvas id="chartComfyWeekly"></canvas></div></div>
-      <div class="card"><h3>RunComfy</h3><div class="chart-box"><canvas id="chartRunWeekly"></canvas></div></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="grid-2">
-      <div>
-        <p class="section-title">Comparatif mensuel <span class="tag">snapshot manuel</span></p>
-        <div class="card"><div class="chart-box"><canvas id="chartMonthly"></canvas></div></div>
-      </div>
-      <div>
-        <p class="section-title">7 derniers jours <span class="tag">€ / jour</span></p>
-        <div class="card"><div class="chart-box"><canvas id="chartLast7"></canvas></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <p class="section-title">Calculateur de coût</p>
-    <div class="card">
-      <div class="rate-line">
-        <span>Taux : <b id="rate-dollar">210 crédits = 1 $</b></span>
-        <span>Prix du crédit : <b id="rate-price">0,00476190 €</b></span>
-      </div>
-      <div class="calc">
-        <div>
-          <label>Crédits à dépenser</label>
-          <input type="number" id="calc-credits" value="3100" min="0">
+    <p class="section-title">Évolution détaillée</p>
+    <div class="evolution-grid">
+      <div class="charts-2x2">
+        <div class="card chart-card">
+          <h3 style="margin-bottom:6px">Réserve de crédits (ComfyUI) <span style="opacity:.5">— colonne "Crédits"</span></h3>
+          <div class="chart-box"><canvas id="chartReserveComfy"></canvas></div>
         </div>
-        <div class="calc-result">
-          <div class="lbl">Prix total</div>
-          <div class="val" id="calc-result">—</div>
+        <div class="card chart-card">
+          <h3 style="margin-bottom:6px">Coût RunComfy (EUR) <span style="opacity:.5">— colonne "Solde restant Euro"</span></h3>
+          <div class="chart-box"><canvas id="chartReserveRun"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+            <h3 style="margin-bottom:0">Consommation hebdomadaire</h3>
+          </div>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="comfy" onclick="switchWeeklyTab('comfy')">ComfyUI</button>
+            <button class="tab-btn" data-tab="run" onclick="switchWeeklyTab('run')">RunComfy</button>
+          </div>
+          <div class="chart-box"><canvas id="chartWeekly"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <h3 style="margin-bottom:6px">7 derniers jours <span style="opacity:.5">(€ / jour)</span></h3>
+          <div class="chart-box"><canvas id="chartLast7"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card monthly-card">
+        <div class="monthly-header">Détail mensuel</div>
+        <div class="monthly-body">
+          <table>
+            <thead><tr>
+              <th class="month">Mois</th>
+              <th class="col-comfy">Créd. ComfyUI</th>
+              <th class="col-comfy">€ ComfyUI</th>
+              <th class="col-run">€ RunComfy</th>
+              <th>€ Total</th>
+            </tr></thead>
+            <tbody id="monthly-table"></tbody>
+            <tfoot id="monthly-foot"></tfoot>
+          </table>
         </div>
       </div>
     </div>
   </section>
 
-  <section>
-    <p class="section-title">Détail mensuel</p>
-    <div class="card" style="padding:0; overflow:auto;">
-      <table>
-        <thead><tr><th>Mois</th><th>Crédits ComfyUI</th><th>€ ComfyUI</th><th>€ RunComfy</th><th>€ Total</th></tr></thead>
-        <tbody id="monthly-table"></tbody>
-        <tfoot id="monthly-foot"></tfoot>
-      </table>
+  <div class="card bottom-bar">
+    <div class="bb-item">
+      <span>↻ Taux</span>
+      <b id="rate-dollar">210 crédits = 1 $</b>
     </div>
-  </section>
+    <div class="bb-divider"></div>
+    <div class="bb-item">
+      <span>◐ Prix du crédit</span>
+      <b id="rate-price">0,00476190 €</b>
+    </div>
+    <div class="bb-divider"></div>
+    <div class="bb-calc">
+      <div style="flex:1">
+        <label>Crédits à dépenser</label>
+        <input type="number" id="calc-credits" value="3100" min="0">
+      </div>
+    </div>
+    <div class="bb-result">
+      <span class="lbl">Coût à dépenser</span>
+      <span class="val" id="calc-result">—</span>
+    </div>
+  </div>
 
   <footer>
     Base : onglet <strong>ComfyUI</strong> + <strong>Historique Comfy</strong> / <strong>Historique RunComfy</strong> du Sheet studio, exposé via un Web App Apps Script (<code>doGet</code>).<br>
@@ -219,21 +269,40 @@
        "runEur": 210.40,
        "runDate": "30/07/2026"
      },
-     "comfyReserve": [["01/07", 98000], ["02/07", 95200], ...],
-     "runReserve":   [["01/07", 320.10], ["02/07", 305.50], ...]
+     "comfyReserve": [[<timestamp_ms_ou_ISO>, 98000], ...],
+     "runReserve":   [[<timestamp_ms_ou_ISO>, 305.50], ...],
+
+     // Optionnel — si absents, la page garde le dernier snapshot codé en dur
+     // ci-dessous (weeklyComfy / weeklyRun / last7Comfy / last7Run).
+     "weeklyComfy": [{"w":"20/07","credits":56747,"eur":237.07}, ...],
+     "weeklyRun":   [{"w":"20/07","eur":126.69}, ...],
+     "last7Comfy":  [{"d":"lun","eur":57.63,"cr":13817}, ...],
+     "last7Run":    [{"d":"lun","eur":52.00}, ...]
    }
 
    C'est exactement la logique que fait déjà ta fonction
-   refreshDashboardData() côté Apps Script : il suffit de l'exposer
-   aussi via doGet(e) pour qu'elle soit joignable en fetch() depuis
-   une page hébergée hors de Google (GitHub Pages n'a pas accès à
-   google.script.run, qui ne fonctionne que dans le conteneur Apps
-   Script lui-même).
+   refreshDashboardData() côté Apps Script (avec en plus le calcul des
+   séries hebdo/7 jours) : il suffit de l'exposer aussi via doGet(e) pour
+   qu'elle soit joignable en fetch() depuis une page hébergée hors de
+   Google (GitHub Pages n'a pas accès à google.script.run, qui ne
+   fonctionne que dans le conteneur Apps Script lui-même).
+
+   NB sur les dates de comfyReserve/runReserve : elles sont tracées sur un
+   axe temps linéaire (voir reserveOptions_ plus bas), donc n'importe quel
+   format lisible par `new Date(...)` fonctionne (timestamp ms, ISO 8601,
+   ou "JJ/MM/AAAA").
    ================================================================ */
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0SGu8vjCgaIuAYlB8olLGNf1CIsKzIXrj2az7cIRVhapO9b1pmuJs59mhQh5PRAcO/exec';
 
-/* ================= DATA snapshot manuel (hebdo / mensuel / 7 derniers jours) ================= */
-const weeklyComfy = [
+/* ================= Seuils fixes des jauges ================= */
+const GAUGE_COMFY_MAX = 170000; // crédits — jauge pleine
+const GAUGE_RUN_MAX = 190;      // euros — jauge pleine
+
+/* ================= DATA snapshot manuel de repli (hebdo / 7 derniers jours) =================
+   Utilisées tant que le endpoint Apps Script ne renvoie pas weeklyComfy /
+   weeklyRun / last7Comfy / last7Run (voir doc ci-dessus). Remplacées dès
+   qu'une réponse live les contient. */
+let weeklyComfy = [
   {w:'20/04', credits:9698,  eur:39.42},
   {w:'27/04', credits:39588, eur:161.01},
   {w:'04/05', credits:31845, eur:129.28},
@@ -249,24 +318,26 @@ const weeklyComfy = [
   {w:'13/07', credits:93298, eur:388.46},
   {w:'20/07*',credits:56747, eur:237.07}
 ];
-const weeklyRun = [
+let weeklyRun = [
   {w:'01/06', eur:0.00}, {w:'08/06', eur:88.96}, {w:'15/06', eur:68.41},
   {w:'22/06', eur:61.34}, {w:'29/06', eur:106.80}, {w:'06/07', eur:86.56},
   {w:'13/07', eur:1.83}, {w:'20/07*', eur:126.69}
 ];
-const monthly = [
-  {m:'Avril',    credits:41816,  comfy:170.09,  run:null},
-  {m:'Mai',      credits:204212, comfy:833.48,  run:null},
-  {m:'Juin',     credits:271978, comfy:1124.73, run:271.41},
-  {m:'Juillet*', credits:290359, comfy:1210.71, run:269.17}
-];
-const last7Comfy = [
+let last7Comfy = [
   {d:'sam', eur:0.00, cr:0}, {d:'dim', eur:0.00, cr:0}, {d:'lun', eur:57.63, cr:13817},
   {d:'mar', eur:97.70, cr:23394}, {d:'mer', eur:13.05, cr:3127}, {d:'jeu', eur:50.83, cr:12145}, {d:'ven*', eur:17.86, cr:4264}
 ];
-const last7Run = [
+let last7Run = [
   {d:'sam', eur:0.00}, {d:'dim', eur:0.00}, {d:'lun', eur:52.00},
   {d:'mar', eur:27.75}, {d:'mer', eur:14.11}, {d:'jeu', eur:14.56}, {d:'ven*', eur:18.28}
+];
+
+/* ================= DATA mensuelle (snapshot manuel) ================= */
+const monthly = [
+  {m:'Avril',    credits:41816,  comfy:170.11,  run:null},
+  {m:'Mai',      credits:204212, comfy:833.42,  run:null},
+  {m:'Juin',     credits:271978, comfy:1123.76, run:284.54},
+  {m:'Juillet*', credits:320432, comfy:1336.55, run:308.82}
 ];
 
 const COMFY_RESERVE = [];
@@ -275,12 +346,15 @@ const RUN_RESERVE_SAMPLE = [];
 let live = {
   comfyCredits:0, comfyEur:0, comfyDate:'—',
   runEur:0, runDate:'—',
-  avgDayComfyCredits:8692, avgDayComfyEur:36.38, avgDayRunEur:10.81,
+  avgDayComfyCredits:8555, avgDayComfyEur:35.80, avgDayRunEur:10.79,
   rateDollar:210, pricePerCredit:0.00476190476
 };
 
 const fmtEur = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const fmtInt = n => Math.round(n).toLocaleString('fr-FR');
+const pad2 = n => String(n).padStart(2,'0');
+const fmtDayMonth = ts => { const d=new Date(ts); return pad2(d.getDate())+'/'+pad2(d.getMonth()+1); };
+const fmtFull = ts => { const d=new Date(ts); return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes()); };
 
 /* ================= RENDER ================= */
 function drawGauge(svgId, ratio, color){
@@ -289,10 +363,14 @@ function drawGauge(svgId, ratio, color){
   const circumference = 2*Math.PI*r;
   const offset = circumference * (1-Math.max(0,Math.min(1,ratio)));
   svg.innerHTML =
-    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#232b31" stroke-width="7"/>' +
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#e6e9f0" stroke-width="7"/>' +
     '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="7" ' +
     'stroke-dasharray="'+circumference+'" stroke-dashoffset="'+offset+'" ' +
     'stroke-linecap="round" transform="rotate(-90 '+cx+' '+cy+')"/>';
+}
+
+function gaugeColor(ratio){
+  return ratio<0.15 ? '#ef4444' : ratio<0.35 ? '#f2a93b' : '#2f6feb';
 }
 
 function renderTop(){
@@ -300,10 +378,14 @@ function renderTop(){
   document.getElementById('comfy-eur-small').textContent = fmtEur(live.comfyEur);
   document.getElementById('run-eur-big').textContent = fmtEur(live.runEur);
 
+  // Jauges à seuils fixes (170 000 cr. / 190 €), et non plus basées sur "jours restants".
+  const comfyRatio = live.comfyCredits / GAUGE_COMFY_MAX;
+  const runRatio = live.runEur / GAUGE_RUN_MAX;
+  drawGauge('gauge-comfy', comfyRatio, gaugeColor(comfyRatio));
+  drawGauge('gauge-run', runRatio, gaugeColor(runRatio));
+
   const comfyDaysLeft = live.avgDayComfyCredits ? live.comfyCredits / live.avgDayComfyCredits : 0;
   const runDaysLeft = live.avgDayRunEur ? live.runEur / live.avgDayRunEur : 0;
-  drawGauge('gauge-comfy', comfyDaysLeft/30, comfyDaysLeft<7?'#ff5d5d':comfyDaysLeft<15?'#f2a93b':'#2dd4bf');
-  drawGauge('gauge-run', runDaysLeft/30, runDaysLeft<7?'#ff5d5d':runDaysLeft<15?'#f2a93b':'#2dd4bf');
   document.getElementById('comfy-days').textContent = '≈ '+comfyDaysLeft.toFixed(1)+' j au rythme actuel';
   document.getElementById('run-days').textContent = '≈ '+runDaysLeft.toFixed(1)+' j au rythme actuel';
 
@@ -324,79 +406,131 @@ function renderTop(){
 let chartRefs = {};
 function destroyCharts(){ Object.values(chartRefs).forEach(c=>c && c.destroy()); chartRefs = {}; }
 
+// Tooltip permissif : le survol déclenche l'affichage dès qu'on est
+// proche du point sur l'axe X, quelle que soit la position en Y.
+const PERMISSIVE_INTERACTION = { mode:'index', intersect:false, axis:'x' };
+
 function renderCharts(){
   if(typeof Chart === 'undefined'){
     const box = document.getElementById('lib-error');
-    box.style.display='block'; box.textContent = "⚠ Chart.js n'a pas pu se charger depuis le CDN.";
+    box.style.display='block';
+    box.innerHTML = "⚠ Chart.js n'a pas pu se charger depuis le CDN. <button onclick=\"loadChartLibs(renderCharts)\">Réessayer</button>";
     return;
   }
+  document.getElementById('lib-error').style.display='none';
   if(typeof ChartDataLabels !== 'undefined'){ Chart.register(ChartDataLabels); }
   destroyCharts();
-  Chart.defaults.color = '#7c8791';
+  Chart.defaults.color = '#7c8494';
   Chart.defaults.font.family = "'IBM Plex Mono', monospace";
-  Chart.defaults.font.size = 11;
-  Chart.defaults.borderColor = '#232b31';
+  Chart.defaults.font.size = 10;
+  Chart.defaults.borderColor = '#e6e9f0';
   Chart.defaults.maintainAspectRatio = false;
   Chart.defaults.responsive = true;
+  Chart.defaults.interaction = PERMISSIVE_INTERACTION;
 
+  renderReserveCharts_();
+  renderWeeklyChart();
+  renderLast7Chart_();
+}
+
+/* Graphes de réserve : axe X en temps réel (linéaire sur timestamps),
+   car les données ne sont PAS régulières dans le temps : les anciennes
+   lignes sont des agrégats journaliers, les récentes sont horaires
+   (15 derniers jours). Un axe "catégories" espacerait les points à tort. */
+function reserveOptions_(yMin, yMax){
+  const y = { grid:{color:'#eef1f6'}, ticks:{maxTicksLimit:5} };
+  if(yMin !== undefined) y.min = yMin;
+  if(yMax !== undefined) y.max = yMax;
+  return {
+    plugins:{ legend:{display:false}, datalabels:{display:false},
+      tooltip:{ callbacks:{ title: items => items.length ? fmtFull(items[0].parsed.x) : '' } }
+    },
+    scales:{
+      y: y,
+      x:{
+        type:'linear',
+        grid:{display:false},
+        ticks:{ maxTicksLimit:6, callback: v => fmtDayMonth(v) }
+      }
+    }
+  };
+}
+
+function toXY_(points){
+  return points.map(p => ({ x: new Date(p[0]).getTime(), y: p[1] }));
+}
+
+// Bornes fixes demandées pour le graphe de réserve ComfyUI (en crédits).
+const COMFY_RESERVE_Y_MIN = -5000;
+const COMFY_RESERVE_Y_MAX = 180000;
+
+function renderReserveCharts_(){
   chartRefs.reserveComfy = new Chart(document.getElementById('chartReserveComfy'), {
     type:'line',
-    data:{ labels:COMFY_RESERVE.map(p=>p[0]), datasets:[{label:'Crédits restants', data:COMFY_RESERVE.map(p=>p[1]), borderColor:'#2dd4bf', backgroundColor:'#2dd4bf22', fill:true, tension:0, pointRadius:0, borderWidth:1.3}] },
-    options:{responsive:true, plugins:{legend:{display:false}, datalabels:{display:false}}, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:8}}}}
+    data:{ datasets:[{ label:'Crédits restants', data:toXY_(COMFY_RESERVE), borderColor:'#2f6feb', backgroundColor:'#2f6feb1a', fill:true, tension:0, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
+    options: reserveOptions_(COMFY_RESERVE_Y_MIN, COMFY_RESERVE_Y_MAX)
   });
 
   chartRefs.reserveRun = new Chart(document.getElementById('chartReserveRun'), {
     type:'line',
-    data:{ labels:RUN_RESERVE_SAMPLE.map(p=>p[0]), datasets:[{label:'Solde (€)', data:RUN_RESERVE_SAMPLE.map(p=>p[1]), borderColor:'#f2a93b', backgroundColor:'#f2a93b22', fill:true, stepped:true, pointRadius:0, borderWidth:1.3}] },
-    options:{responsive:true, plugins:{legend:{display:false}, datalabels:{display:false}}, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}, ticks:{maxTicksLimit:8}}}}
+    data:{ datasets:[{ label:'Solde (€)', data:toXY_(RUN_RESERVE_SAMPLE), borderColor:'#16a56a', backgroundColor:'#16a56a1a', fill:true, stepped:true, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
+    options: reserveOptions_()
   });
+}
 
-  chartRefs.weeklyComfy = new Chart(document.getElementById('chartComfyWeekly'), {
+/* Consommation hebdomadaire : un seul canvas plein largeur, 2 onglets. */
+let weeklyTab = 'comfy';
+function switchWeeklyTab(tab){
+  weeklyTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  renderWeeklyChart();
+}
+
+function renderWeeklyChart(){
+  if(typeof Chart === 'undefined') return;
+  if(chartRefs.weekly){ chartRefs.weekly.destroy(); }
+  const isComfy = weeklyTab === 'comfy';
+  const src = isComfy ? weeklyComfy : weeklyRun;
+  const color = isComfy ? '#2f6feb' : '#16a56a';
+
+  chartRefs.weekly = new Chart(document.getElementById('chartWeekly'), {
     type:'bar',
-    data:{ labels: weeklyComfy.map(x=>x.w), datasets:[{label:'ComfyUI', data:weeklyComfy.map(x=>x.credits), backgroundColor:'#2dd4bf99', borderColor:'#2dd4bf', borderWidth:1}] },
-    options:{responsive:true, plugins:{legend:{display:false},
-      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
-        formatter:(v,ctx)=> fmtInt(v)+' cr.\n'+fmtEur(weeklyComfy[ctx.dataIndex].eur)}
-    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+    data:{ labels: src.map(x=>x.w), datasets:[{
+      label: isComfy ? 'ComfyUI' : 'RunComfy',
+      data: src.map(x=>x.eur),
+      backgroundColor: color+'cc',
+      borderColor: color,
+      borderWidth:1,
+      borderRadius:5
+    }]},
+    options:{
+      plugins:{ legend:{display:false},
+        datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:8.5},
+          formatter:(v,ctx)=> isComfy ? (fmtInt(src[ctx.dataIndex].credits)+' cr.\n'+fmtEur(v)) : fmtEur(v)
+        }
+      },
+      scales:{ y:{grid:{color:'#eef1f6'}, ticks:{maxTicksLimit:5}}, x:{grid:{display:false}} }
+    }
   });
+}
 
-  chartRefs.weeklyRun = new Chart(document.getElementById('chartRunWeekly'), {
-    type:'bar',
-    data:{ labels: weeklyRun.map(x=>x.w), datasets:[{label:'RunComfy', data:weeklyRun.map(x=>x.eur), backgroundColor:'#f2a93b99', borderColor:'#f2a93b', borderWidth:1}] },
-    options:{responsive:true, plugins:{legend:{display:false},
-      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9}, formatter:(v)=> fmtEur(v)}
-    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
-  });
-
-  chartRefs.monthly = new Chart(document.getElementById('chartMonthly'), {
-    type:'bar',
-    data:{ labels: monthly.map(x=>x.m), datasets:[
-      {label:'ComfyUI (€)', data:monthly.map(x=>x.comfy), backgroundColor:'#2dd4bf'},
-      {label:'RunComfy (€)', data:monthly.map(x=>x.run), backgroundColor:'#f2a93b'}
-    ]},
-    options:{responsive:true, plugins:{
-      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
-        formatter:(v,ctx)=>{
-          if(v===null||v===undefined) return '';
-          if(ctx.datasetIndex===0) return fmtInt(monthly[ctx.dataIndex].credits)+' cr.\n'+fmtEur(v);
-          return fmtEur(v);
-        }}
-    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
-  });
-
+function renderLast7Chart_(){
   chartRefs.last7 = new Chart(document.getElementById('chartLast7'), {
     type:'bar',
     data:{ labels: last7Comfy.map(x=>x.d), datasets:[
-      {label:'ComfyUI', data:last7Comfy.map(x=>x.eur), backgroundColor:'#2dd4bf'},
-      {label:'RunComfy', data:last7Run.map(x=>x.eur), backgroundColor:'#f2a93b'}
+      {label:'ComfyUI', data:last7Comfy.map(x=>x.eur), backgroundColor:'#2f6feb', borderRadius:5},
+      {label:'RunComfy', data:last7Run.map(x=>x.eur), backgroundColor:'#16a56a', borderRadius:5}
     ]},
-    options:{responsive:true, plugins:{
-      datalabels:{anchor:'end', align:'top', color:'#e8ecee', font:{size:9},
-        formatter:(v,ctx)=>{
-          if(ctx.datasetIndex===0) return fmtInt(last7Comfy[ctx.dataIndex].cr)+' cr.\n'+fmtEur(v);
-          return fmtEur(v);
-        }}
-    }, scales:{y:{grid:{color:'#1a2025'}}, x:{grid:{display:false}}}}
+    options:{
+      plugins:{
+        datalabels:{ anchor:'end', align:'top', color:'#12151c', font:{size:8.5},
+          formatter:(v,ctx)=>{
+            if(ctx.datasetIndex===0) return fmtInt(last7Comfy[ctx.dataIndex].cr)+' cr.\n'+fmtEur(v);
+            return fmtEur(v);
+          }}
+      },
+      scales:{ y:{grid:{color:'#eef1f6'}, ticks:{maxTicksLimit:5}}, x:{grid:{display:false}} }
+    }
   });
 }
 
@@ -405,13 +539,26 @@ function renderTable(){
   tbody.innerHTML = '';
   monthly.forEach(row=>{
     const total = row.comfy + (row.run||0);
-    tbody.innerHTML += '<tr><td>'+row.m+'</td><td>'+fmtInt(row.credits)+'</td><td>'+fmtEur(row.comfy)+'</td><td>'+(row.run!==null?fmtEur(row.run):'—')+'</td><td>'+fmtEur(total)+'</td></tr>';
+    tbody.innerHTML +=
+      '<tr>' +
+        '<td class="month">'+row.m+'</td>' +
+        '<td class="col-comfy">'+fmtInt(row.credits)+'</td>' +
+        '<td class="col-comfy">'+fmtEur(row.comfy)+'</td>' +
+        '<td class="col-run">'+(row.run!==null?fmtEur(row.run):'—')+'</td>' +
+        '<td>'+fmtEur(total)+'</td>' +
+      '</tr>';
   });
   const totCredits = monthly.reduce((s,r)=>s+r.credits,0);
   const totComfy = monthly.reduce((s,r)=>s+r.comfy,0);
   const totRun = monthly.reduce((s,r)=>s+(r.run||0),0);
   document.getElementById('monthly-foot').innerHTML =
-    '<tr><td>Total</td><td>'+fmtInt(totCredits)+'</td><td>'+fmtEur(totComfy)+'</td><td>'+fmtEur(totRun)+'</td><td>'+fmtEur(totComfy+totRun)+'</td></tr>';
+    '<tr>' +
+      '<td class="month">Total</td>' +
+      '<td class="col-comfy">'+fmtInt(totCredits)+'</td>' +
+      '<td class="col-comfy">'+fmtEur(totComfy)+'</td>' +
+      '<td class="col-run">'+fmtEur(totRun)+'</td>' +
+      '<td>'+fmtEur(totComfy+totRun)+'</td>' +
+    '</tr>';
 }
 
 function runCalc(){
@@ -440,6 +587,15 @@ function applyServerData(data){
   if(Array.isArray(data.runReserve)){
     data.runReserve.forEach(p=>RUN_RESERVE_SAMPLE.push(p));
   }
+
+  // Optionnel : si le endpoint Apps Script renvoie déjà les séries
+  // hebdo / 7 jours calculées, on les utilise à la place du snapshot
+  // codé en dur ci-dessus.
+  if(Array.isArray(data.weeklyComfy) && data.weeklyComfy.length) weeklyComfy = data.weeklyComfy;
+  if(Array.isArray(data.weeklyRun) && data.weeklyRun.length)     weeklyRun = data.weeklyRun;
+  if(Array.isArray(data.last7Comfy) && data.last7Comfy.length)   last7Comfy = data.last7Comfy;
+  if(Array.isArray(data.last7Run) && data.last7Run.length)       last7Run = data.last7Run;
+
   renderAll();
 }
 
@@ -484,19 +640,45 @@ window.addEventListener('error', function(e){
   box.textContent = '⚠ Erreur JS : ' + e.message + ' (ligne ' + e.lineno + ')';
 });
 
-// Premier rendu : on affiche déjà les graphes snapshot (hebdo/mensuel/7j)
-// puis on tente de récupérer les données live via fetch().
+// Premier rendu : cartes/tableau/graphs snapshot déjà affichés avec les
+// valeurs de repli, puis on tente de récupérer les données live via fetch().
+renderTop();
 renderTable();
 fetchLiveData(false);
-</script>
 
-<!-- Chart.js chargé en fin de body : le reste de la page (cartes, texte)
-     s'affiche sans attendre le téléchargement de la librairie. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
-<script>
-  // Les charts nécessitent Chart.js : on les (re)rend une fois la lib chargée.
-  renderCharts();
+/* ================= Chargement Chart.js avec repli sur un second CDN =================
+   cdnjs peut être bloqué par certains réseaux/pare-feux d'entreprise :
+   on retente automatiquement sur jsDelivr avant d'afficher une erreur. */
+function loadScript(src, onload, onerror){
+  const s = document.createElement('script');
+  s.src = src;
+  s.onload = onload;
+  s.onerror = onerror;
+  document.body.appendChild(s);
+}
+
+function loadChartLibs(onReady){
+  const chartPrimary  = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  const chartFallback = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+  const dlPrimary  = 'https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js';
+  const dlFallback = 'https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js';
+
+  function loadDatalabels(){
+    // Le plugin de labels est un bonus : si les deux CDN échouent, on
+    // affiche quand même les graphs sans les petites étiquettes de valeur.
+    loadScript(dlPrimary, onReady, function(){ loadScript(dlFallback, onReady, onReady); });
+  }
+
+  loadScript(chartPrimary, loadDatalabels, function(){
+    loadScript(chartFallback, loadDatalabels, function(){
+      const box = document.getElementById('lib-error');
+      box.style.display = 'block';
+      box.innerHTML = "⚠ Chart.js n'a pas pu se charger (CDN inaccessible depuis ce réseau). <button onclick=\"loadChartLibs(renderCharts)\">Réessayer</button>";
+    });
+  });
+}
+
+loadChartLibs(renderCharts);
 </script>
 </body>
 </html>
