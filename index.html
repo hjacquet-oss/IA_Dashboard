@@ -163,7 +163,7 @@
       <span class="delta down" id="avg-month-total"></span>
     </div>
     <div class="card card-dark stat">
-      <h3>Juillet 2026 (au 24/07)</h3>
+      <h3 id="july-title">Mois en cours</h3>
       <span class="big" id="july-total">—</span>
       <span class="sub" id="july-detail"></span>
     </div>
@@ -335,7 +335,7 @@ let last7Run = [
 ];
 
 /* ================= DATA mensuelle (snapshot manuel) ================= */
-const monthly = [
+let monthly = [
   {m:'Avril',    credits:41816,  comfy:170.11,  run:null},
   {m:'Mai',      credits:204212, comfy:833.42,  run:null},
   {m:'Juin',     credits:271978, comfy:1123.76, run:284.54},
@@ -395,9 +395,14 @@ function renderTop(){
   document.getElementById('avg-day-detail').textContent = 'ComfyUI '+fmtEur(live.avgDayComfyEur)+' · RunComfy '+fmtEur(live.avgDayRunEur);
   document.getElementById('avg-month-total').textContent = '≈ '+fmtEur((live.avgDayComfyEur+live.avgDayRunEur)*29.75)+' / mois';
 
-  const julyComfy = monthly[monthly.length-1].comfy, julyRun = monthly[monthly.length-1].run||0;
+  const lastMonth = monthly[monthly.length-1] || {m:'—', comfy:0, run:0};
+  const julyComfy = lastMonth.comfy||0, julyRun = lastMonth.run||0;
   document.getElementById('july-total').textContent = fmtEur(julyComfy+julyRun);
   document.getElementById('july-detail').textContent = 'ComfyUI '+fmtEur(julyComfy)+' · RunComfy '+fmtEur(julyRun);
+  const monthLabel = String(lastMonth.m||'—').replace('*','');
+  const yearLabel = lastMonth.year ? ' '+lastMonth.year : '';
+  const asOf = lastMonth.current ? ' (au '+pad2(new Date().getDate())+'/'+pad2(new Date().getMonth()+1)+')' : '';
+  document.getElementById('july-title').textContent = monthLabel+yearLabel+asOf;
 
   document.getElementById('rate-dollar').textContent = live.rateDollar+' crédits = 1 $';
   document.getElementById('rate-price').textContent = live.pricePerCredit.toLocaleString('fr-FR',{minimumFractionDigits:8,maximumFractionDigits:8})+' €';
@@ -615,6 +620,13 @@ function applyServerData(data){
   if(Array.isArray(data.weeklyRun) && data.weeklyRun.length)     weeklyRun = data.weeklyRun;
   if(Array.isArray(data.last7Comfy) && data.last7Comfy.length)   last7Comfy = data.last7Comfy;
   if(Array.isArray(data.last7Run) && data.last7Run.length)       last7Run = data.last7Run;
+  if(Array.isArray(data.monthly) && data.monthly.length)         monthly = data.monthly;
+
+  if(data.avgDay){
+    if(data.avgDay.avgDayComfyCredits!=null) live.avgDayComfyCredits = Number(data.avgDay.avgDayComfyCredits);
+    if(data.avgDay.avgDayComfyEur!=null)     live.avgDayComfyEur = Number(data.avgDay.avgDayComfyEur);
+    if(data.avgDay.avgDayRunEur!=null)       live.avgDayRunEur = Number(data.avgDay.avgDayRunEur);
+  }
 
   renderAll();
 }
