@@ -632,6 +632,7 @@ async function fetchLiveData(isManualReload){
   }
 
   if(isManualReload){ btn.disabled = true; }
+  isFetchingLiveData = true;
   msg.textContent = 'Lecture du Web App…';
 
   try{
@@ -646,6 +647,7 @@ async function fetchLiveData(isManualReload){
     msg.textContent = "Lecture impossible (" + (err && err.message ? err.message : err) + "). Vérifie que le Web App est déployé avec l'accès \"Tout le monde\".";
   }finally{
     if(isManualReload){ btn.disabled = false; }
+    isFetchingLiveData = false;
   }
 }
 
@@ -660,11 +662,39 @@ window.addEventListener('error', function(e){
   box.textContent = '⚠ Erreur JS : ' + e.message + ' (ligne ' + e.lineno + ')';
 });
 
+/* ================= Auto-refresh (données live) =================
+   Sans cette boucle, un onglet laissé ouvert affiche indéfiniment la
+   donnée lue au chargement (ex : bloqué au vendredi 31/07). On relance
+   fetchLiveData() périodiquement, alignée sur le TTL du cache Apps
+   Script (120s), + un refresh immédiat quand l'onglet redevient actif
+   (les navigateurs mettent en pause les timers des onglets en arrière-
+   plan, donc setInterval seul ne suffit pas à rattraper un onglet resté
+   inactif longtemps). Déclaré AVANT le premier appel à fetchLiveData()
+   plus bas, car fetchLiveData() référence isFetchingLiveData dès son
+   premier appel. */
+const AUTO_REFRESH_MS = 120 * 1000; // 2 min, aligné sur DASHBOARD_CACHE_TTL côté Apps Script
+let autoRefreshTimer = null;
+let isFetchingLiveData = false;
+
+function scheduleAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => {
+    if(!isFetchingLiveData) fetchLiveData(false);
+  }, AUTO_REFRESH_MS);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && !isFetchingLiveData){
+    fetchLiveData(false);
+  }
+});
+
 // Premier rendu : cartes/tableau/graphs snapshot déjà affichés avec les
 // valeurs de repli, puis on tente de récupérer les données live via fetch().
 renderTop();
 renderTable();
 fetchLiveData(false);
+scheduleAutoRefresh();
 
 /* ================= Chargement Chart.js avec repli sur un second CDN =================
    cdnjs peut être bloqué par certains réseaux/pare-feux d'entreprise :
