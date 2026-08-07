@@ -443,22 +443,26 @@ function renderCharts(){
    car les données ne sont PAS régulières dans le temps : les anciennes
    lignes sont des agrégats journaliers, les récentes sont horaires
    (15 derniers jours). Un axe "catégories" espacerait les points à tort. */
-function reserveOptions_(yMin, yMax){
+function reserveOptions_(yMin, yMax, xMin, xMax){
   const y = { grid:{color:'#eef1f6'}, ticks:{maxTicksLimit:5} };
   if(yMin !== undefined) y.min = yMin;
   if(yMax !== undefined) y.max = yMax;
+  const x = {
+    type:'linear',
+    bounds:'data', // empêche Chart.js d'étendre l'axe jusqu'à une graduation "ronde" au-delà de la dernière donnée réelle
+    grid:{display:false},
+    ticks:{ maxTicksLimit:6, callback: v => fmtDayMonth(v) }
+  };
+  // Filet de sécurité supplémentaire : borne explicite sur les vraies
+  // valeurs min/max des données, au cas où bounds:'data' seul ne suffise
+  // pas à empêcher l'arrondi de l'axe selon la version de Chart.js.
+  if(xMin !== undefined) x.min = xMin;
+  if(xMax !== undefined) x.max = xMax;
   return {
     plugins:{ legend:{display:false}, datalabels:{display:false},
       tooltip:{ callbacks:{ title: items => items.length ? fmtFull(items[0].parsed.x) : '' } }
     },
-    scales:{
-      y: y,
-      x:{
-        type:'linear',
-        grid:{display:false},
-        ticks:{ maxTicksLimit:6, callback: v => fmtDayMonth(v) }
-      }
-    }
+    scales:{ y: y, x: x }
   };
 }
 
@@ -470,17 +474,30 @@ function toXY_(points){
 const COMFY_RESERVE_Y_MIN = -5000;
 const COMFY_RESERVE_Y_MAX = 180000;
 
+// Renvoie [min, max] des timestamps x d'un tableau de points {x,y}, ou
+// [undefined, undefined] si vide (laisse Chart.js déduire automatiquement).
+function xRange_(xyPoints){
+  if(!xyPoints.length) return [undefined, undefined];
+  const xs = xyPoints.map(p => p.x);
+  return [Math.min(...xs), Math.max(...xs)];
+}
+
 function renderReserveCharts_(){
+  const comfyXY = toXY_(COMFY_RESERVE);
+  const runXY = toXY_(RUN_RESERVE_SAMPLE);
+  const [comfyXMin, comfyXMax] = xRange_(comfyXY);
+  const [runXMin, runXMax] = xRange_(runXY);
+
   chartRefs.reserveComfy = new Chart(document.getElementById('chartReserveComfy'), {
     type:'line',
-    data:{ datasets:[{ label:'Crédits restants', data:toXY_(COMFY_RESERVE), borderColor:'#2f6feb', backgroundColor:'#2f6feb1a', fill:true, tension:0, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
-    options: reserveOptions_(COMFY_RESERVE_Y_MIN, COMFY_RESERVE_Y_MAX)
+    data:{ datasets:[{ label:'Crédits restants', data:comfyXY, borderColor:'#2f6feb', backgroundColor:'#2f6feb1a', fill:true, tension:0, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
+    options: reserveOptions_(COMFY_RESERVE_Y_MIN, COMFY_RESERVE_Y_MAX, comfyXMin, comfyXMax)
   });
 
   chartRefs.reserveRun = new Chart(document.getElementById('chartReserveRun'), {
     type:'line',
-    data:{ datasets:[{ label:'Solde (€)', data:toXY_(RUN_RESERVE_SAMPLE), borderColor:'#16a56a', backgroundColor:'#16a56a1a', fill:true, stepped:true, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
-    options: reserveOptions_()
+    data:{ datasets:[{ label:'Solde (€)', data:runXY, borderColor:'#16a56a', backgroundColor:'#16a56a1a', fill:true, stepped:true, pointRadius:0, pointHoverRadius:4, borderWidth:2 }] },
+    options: reserveOptions_(undefined, undefined, runXMin, runXMax)
   });
 }
 
